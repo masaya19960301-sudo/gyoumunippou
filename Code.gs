@@ -258,8 +258,20 @@ function getFilteredData(date, truck) {
       return { success: true, data: [] };
     }
 
-    var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+    var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h) {
+      return String(h);
+    });
     var allData = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+
+    // Date型を文字列に変換
+    allData = allData.map(function(row) {
+      return row.map(function(cell) {
+        if (cell instanceof Date) {
+          return Utilities.formatDate(cell, 'Asia/Tokyo', 'yyyy/MM/dd');
+        }
+        return cell;
+      });
+    });
 
     // 配送順データを取得
     var routeMap = getRouteMap();
@@ -273,6 +285,22 @@ function getFilteredData(date, truck) {
     var amountIdx = findColIdx(headers, '金額');
     var paymentIdx = findColIdx(headers, '支払');
 
+    // デバッグ用: マッチしない場合の情報
+    var debugInfo = {
+      headerCount: headers.length,
+      dataCount: allData.length,
+      slipIdx: slipIdx,
+      routeMapSize: Object.keys(routeMap).length,
+      sampleSlips: [],
+      sampleRouteKeys: Object.keys(routeMap).slice(0, 5)
+    };
+
+    if (slipIdx !== -1 && allData.length > 0) {
+      for (var di = 0; di < Math.min(3, allData.length); di++) {
+        debugInfo.sampleSlips.push(String(allData[di][slipIdx]));
+      }
+    }
+
     var result = [];
 
     allData.forEach(function(row) {
@@ -281,10 +309,10 @@ function getFilteredData(date, truck) {
 
       if (!route) return;
       if (route.deliveryDate !== date) return;
-      if (route.truck !== truck) return;
+      if (String(route.truck) !== String(truck)) return;
 
       var address = addressIdx !== -1 ? String(row[addressIdx]).trim() : '';
-      var amount = amountIdx !== -1 ? row[amountIdx] : '';
+      var amount = amountIdx !== -1 ? String(row[amountIdx]) : '';
       var payment = paymentIdx !== -1 ? String(row[paymentIdx]).trim() : '';
 
       // 住所を分解
@@ -315,9 +343,9 @@ function getFilteredData(date, truck) {
       return a.seq - b.seq;
     });
 
-    return { success: true, data: result };
+    return { success: true, data: result, debug: debugInfo };
   } catch (e) {
-    return { success: false, data: [], message: e.message };
+    return { success: false, data: [], message: 'エラー: ' + e.message };
   }
 }
 
@@ -508,6 +536,7 @@ function getRouteMap() {
     var lastRow = sheet.getLastRow();
     if (lastRow <= 1) return map;
 
+    // 列: 日付(0), 伝票No(1), 配送日(2), 電話番号(3), 店コード(4), 号車(5), 何件目(6), 配送センター(7), 契約日(8)
     var data = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
 
     data.forEach(function(row) {
@@ -527,9 +556,10 @@ function getRouteMap() {
 
 /**
  * 配送日コードをyyyy/MM/dd形式に変換
+ * 例: 80120 → 令和8年1月20日 → 2026/01/20
  */
 function deliveryCodeToYMD(code) {
-  if (!code || code.length < 5) return code;
+  if (!code || String(code).length < 5) return String(code);
   var s = String(code);
   var yearStr, monthStr, dayStr;
   if (s.length === 5) {
@@ -541,7 +571,7 @@ function deliveryCodeToYMD(code) {
     monthStr = s.substring(2, 4);
     dayStr = s.substring(4, 6);
   } else {
-    return code;
+    return s;
   }
   var reiwaYear = parseInt(yearStr, 10);
   var adYear = 2018 + reiwaYear;

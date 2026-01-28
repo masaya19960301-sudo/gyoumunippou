@@ -721,6 +721,14 @@
           document.getElementById('loadingData').style.display = 'none';
           if (result.success) {
             currentData = result.data;
+            if (currentData.length === 0 && result.debug) {
+              var d = result.debug;
+              console.log('DEBUG:', JSON.stringify(d));
+              showMsg('データ0件 - ヘッダー数:' + d.headerCount + ' データ行:' + d.dataCount +
+                ' 伝票列:' + d.slipIdx + ' ルートMap:' + d.routeMapSize +
+                ' 伝票例:' + d.sampleSlips.join(',') +
+                ' ルートキー例:' + d.sampleRouteKeys.join(','), 'error');
+            }
             renderEditTable(date, truck);
           } else {
             showMsg(result.message, 'error');
