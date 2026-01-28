@@ -279,15 +279,31 @@ function getFilteredData(date, truck) {
     // 報告データを取得
     var reportMap = getReportMap();
 
-    // 列インデックス取得
+    // 列インデックス取得（複数キーワードでフォールバック）
     var slipIdx = findColIdx(headers, '伝票');
+    if (slipIdx === -1) {
+      // ルートマップのキー（伝票No）と一致する値を持つ列を探す
+      var routeKeys = Object.keys(routeMap);
+      if (routeKeys.length > 0 && allData.length > 0) {
+        var sampleKey = routeKeys[0];
+        for (var ci = 0; ci < headers.length; ci++) {
+          for (var ri = 0; ri < Math.min(5, allData.length); ri++) {
+            if (String(allData[ri][ci]).trim() === sampleKey) {
+              slipIdx = ci;
+              break;
+            }
+          }
+          if (slipIdx !== -1) break;
+        }
+      }
+    }
     var addressIdx = findColIdx(headers, '住所');
     var amountIdx = findColIdx(headers, '金額');
     var paymentIdx = findColIdx(headers, '支払');
 
-    // デバッグ用: マッチしない場合の情報
+    // デバッグ用
     var debugInfo = {
-      headerCount: headers.length,
+      headers: headers.join(' | '),
       dataCount: allData.length,
       slipIdx: slipIdx,
       routeMapSize: Object.keys(routeMap).length,
