@@ -194,6 +194,21 @@
           </table>
         </div>
       </div>
+
+      <!-- 配送順データ -->
+      <div class="card">
+        <h2>配送順データ貼り付け</h2>
+        <textarea class="csv-input" id="routeInput" style="min-height:120px;"
+          placeholder="配送順のデータをここに貼り付けてください&#10;&#10;例: 722839  80120  9052810160  45  1  1  &  80103&#10;（伝票No / 配送日コード / 電話番号 / コード / 号車 / 何件目 / & / 参照コード）"></textarea>
+        <div class="csv-hint">
+          ※配送日コード: 80120 → 令和8年1月20日<br>
+          ※伝票Noで配送データと自動で紐付けされます
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnRouteImport" onclick="importRouteData()">配送順を保存</button>
+          <button class="btn btn-secondary" onclick="clearRouteInput()">クリア</button>
+        </div>
+      </div>
     </div>
 
     <!-- 配送一覧セクション -->
@@ -361,6 +376,39 @@
     function clearInput() {
       document.getElementById('csvInput').value = '';
       document.getElementById('previewCard').style.display = 'none';
+      hideMsg();
+    }
+
+    // --- 配送順データ保存 ---
+    function importRouteData() {
+      var text = document.getElementById('routeInput').value.trim();
+      if (!text) { showMsg('配送順データを入力してください。', 'error'); return; }
+
+      var btn = document.getElementById('btnRouteImport');
+      btn.disabled = true;
+      btn.textContent = '保存中...';
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          btn.disabled = false;
+          btn.textContent = '配送順を保存';
+          if (result.success) {
+            showMsg(result.message, 'success');
+            document.getElementById('routeInput').value = '';
+          } else {
+            showMsg(result.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.textContent = '配送順を保存';
+          showMsg('通信エラー: ' + err.message, 'error');
+        })
+        .importRouteData(text);
+    }
+
+    function clearRouteInput() {
+      document.getElementById('routeInput').value = '';
       hideMsg();
     }
 

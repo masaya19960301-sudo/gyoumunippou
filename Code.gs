@@ -1,9 +1,11 @@
 /**
  * 家具配送センター 業務日報アプリ - サーバーサイド
  * Excelから全列をそのまま貼り付けて使える
+ * 配送順データ（ルート）にも対応
  */
 
 var SHEET_NAME = '配送データ';
+var ROUTE_SHEET_NAME = '配送順データ';
 
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
@@ -11,9 +13,8 @@ function doGet() {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
-/**
- * スプレッドシートを取得（なければ作成）
- */
+// --- シート取得 ---
+
 function getOrCreateSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_NAME);
@@ -24,9 +25,21 @@ function getOrCreateSheet() {
   return sheet;
 }
 
-/**
- * 貼り付けデータをパースして保存する
- */
+function getOrCreateRouteSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(ROUTE_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(ROUTE_SHEET_NAME);
+    var headers = ['日付', '伝票No', '配送日', '電話番号', 'コード', '号車', '何件目', '区切', '参照コード'];
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+// --- 配送データ（メイン）取込 ---
+
 function importCsvData(csvText) {
   try {
     var rows = parseText(csvText);
@@ -57,15 +70,13 @@ function importCsvData(csvText) {
       return { success: false, message: 'データ行がありません（ヘッダーのみ）。' };
     }
 
-    // 列数を揃える（最大列数に合わせる）
     var maxCols = 0;
     dataRows.forEach(function(row) {
       if (row.length > maxCols) maxCols = row.length;
     });
 
-    // シートにヘッダーがなければ設定する（日付列 + 元の列）
     var lastRow = sheet.getLastRow();
-    var totalCols = maxCols + 1; // +1 for 日付
+    var totalCols = maxCols + 1;
     if (lastRow === 0) {
       var sheetHeaders = ['日付'];
       if (headers) {
@@ -75,14 +86,12 @@ function importCsvData(csvText) {
           sheetHeaders.push('列' + (i + 1));
         }
       }
-      // 列数を揃える
       while (sheetHeaders.length < totalCols) sheetHeaders.push('');
       sheet.getRange(1, 1, 1, totalCols).setValues([sheetHeaders]);
       sheet.getRange(1, 1, 1, totalCols).setFontWeight('bold');
       lastRow = 1;
     }
 
-    // 各行を保存（日付を先頭に付与）
     var saveData = dataRows.map(function(row) {
       var padded = row.concat(Array(maxCols).fill('')).slice(0, maxCols);
       return [today].concat(padded);
@@ -92,16 +101,46 @@ function importCsvData(csvText) {
 
     return {
       success: true,
-      message: saveData.length + '件のデータを保存しました。'
+      message: saveData.length + '件の配送データを保存しました。'
     };
   } catch (e) {
     return { success: false, message: 'エラー: ' + e.message };
   }
 }
 
-/**
- * テキストをパース（CSV/TSV自動判定）
- */
+// --- 配送順データ取込 ---
+
+function importRouteData(csvText) {
+  try {
+    var rows = parseText(csvText);
+    if (rows.length === 0) {
+      return { success: false, message: 'データが空です。' };
+    }
+
+    var sheet = getOrCreateRouteSheet();
+    var today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd');
+
+    // 全列保存（日付を先頭に付与、最大8列分）
+    var colCount = 8;
+    var saveData = rows.map(function(row) {
+      var padded = row.concat(Array(colCount).fill('')).slice(0, colCount);
+      return [today].concat(padded);
+    });
+
+    var lastRow = sheet.getLastRow();
+    sheet.getRange(lastRow + 1, 1, saveData.length, colCount + 1).setValues(saveData);
+
+    return {
+      success: true,
+      message: saveData.length + '件の配送順データを保存しました。'
+    };
+  } catch (e) {
+    return { success: false, message: 'エラー: ' + e.message };
+  }
+}
+
+// --- テキストパーサー（CSV/TSV自動判定）---
+
 function parseText(text) {
   var firstLine = text.split(/\r?\n/)[0] || '';
   var delimiter = (firstLine.indexOf('\t') !== -1) ? '\t' : ',';
@@ -137,9 +176,8 @@ function parseText(text) {
   return rows;
 }
 
-/**
- * 保存済みデータをヘッダー付きで取得
- */
+// --- 保存済みデータ取得（配送順データも結合）---
+
 function getSavedData(date) {
   try {
     var sheet = getOrCreateSheet();
@@ -174,6 +212,29 @@ function getSavedData(date) {
       });
     });
 
+    // 配送順データを結合
+    var routeMap = getRouteMap(date);
+    // 伝票No列のインデックスを探す
+    var slipIdx = -1;
+    for (var i = 0; i < headers.length; i++) {
+      if (String(headers[i]).indexOf('伝票') !== -1) { slipIdx = i; break; }
+    }
+
+    if (slipIdx !== -1 && Object.keys(routeMap).length > 0) {
+      // ヘッダーに配送順情報を追加
+      headers = headers.concat(['号車', '何件目', '配送日']);
+
+      allData = allData.map(function(row) {
+        var slipNo = String(row[slipIdx]).trim();
+        var route = routeMap[slipNo];
+        if (route) {
+          return row.concat([route.truck, route.seq, route.deliveryDate]);
+        } else {
+          return row.concat(['', '', '']);
+        }
+      });
+    }
+
     return { success: true, headers: headers, data: allData };
   } catch (e) {
     return { success: false, headers: [], data: [], message: 'エラー: ' + e.message };
@@ -181,8 +242,73 @@ function getSavedData(date) {
 }
 
 /**
- * データ行を削除
+ * 配送順データをマップとして取得（伝票No → {号車, 何件目, 配送日}）
  */
+function getRouteMap(date) {
+  var map = {};
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(ROUTE_SHEET_NAME);
+    if (!sheet) return map;
+
+    var lastRow = sheet.getLastRow();
+    if (lastRow <= 1) return map;
+
+    // 列: 日付(0), 伝票No(1), 配送日(2), 電話番号(3), コード(4), 号車(5), 何件目(6), 区切(7), 参照コード(8)
+    var data = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
+
+    data.forEach(function(row) {
+      var rowDate = '';
+      if (row[0] instanceof Date) {
+        rowDate = Utilities.formatDate(row[0], 'Asia/Tokyo', 'yyyy/MM/dd');
+      } else {
+        rowDate = String(row[0]);
+      }
+
+      if (!date || rowDate === date) {
+        var slipNo = String(row[1]).trim();
+        // 配送日コードを変換 (80120 → R8/01/20)
+        var rawDate = String(row[2]).trim();
+        var deliveryDate = parseDeliveryDate(rawDate);
+
+        map[slipNo] = {
+          truck: String(row[5]).trim(),
+          seq: String(row[6]).trim(),
+          deliveryDate: deliveryDate
+        };
+      }
+    });
+  } catch (e) {
+    // エラー時は空のマップを返す
+  }
+  return map;
+}
+
+/**
+ * 配送日コードを変換 (80120 → R8/01/20)
+ */
+function parseDeliveryDate(code) {
+  if (!code || code.length < 5) return code;
+  var s = String(code);
+  // 先頭1桁が令和の年、残りがMMDD
+  // 5桁: YMMDD, 6桁: YYMMDD
+  var yearStr, monthStr, dayStr;
+  if (s.length === 5) {
+    yearStr = s.substring(0, 1);
+    monthStr = s.substring(1, 3);
+    dayStr = s.substring(3, 5);
+  } else if (s.length === 6) {
+    yearStr = s.substring(0, 2);
+    monthStr = s.substring(2, 4);
+    dayStr = s.substring(4, 6);
+  } else {
+    return code;
+  }
+  return 'R' + yearStr + '/' + monthStr + '/' + dayStr;
+}
+
+// --- データ削除 ---
+
 function deleteRow(rowIndex) {
   try {
     var sheet = getOrCreateSheet();
