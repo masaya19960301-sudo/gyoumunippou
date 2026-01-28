@@ -21,29 +21,12 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
 
-    .header h1 {
-      font-size: 20px;
-      font-weight: 500;
-    }
+    .header h1 { font-size: 20px; font-weight: 500; }
+    .header .date { margin-left: auto; font-size: 14px; opacity: 0.9; }
 
-    .header .date {
-      margin-left: auto;
-      font-size: 14px;
-      opacity: 0.9;
-    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    /* タブ */
-    .tabs {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 20px;
-    }
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
 
     .tab {
       padding: 10px 24px;
@@ -56,17 +39,9 @@
       transition: all 0.2s;
     }
 
-    .tab.active {
-      background: #1a73e8;
-      color: #fff;
-      font-weight: 500;
-    }
+    .tab.active { background: #1a73e8; color: #fff; font-weight: 500; }
+    .tab:hover:not(.active) { background: #e8eaed; }
 
-    .tab:hover:not(.active) {
-      background: #e8eaed;
-    }
-
-    /* カード */
     .card {
       background: #fff;
       border-radius: 8px;
@@ -75,14 +50,8 @@
       margin-bottom: 20px;
     }
 
-    .card h2 {
-      font-size: 16px;
-      font-weight: 500;
-      margin-bottom: 16px;
-      color: #1a73e8;
-    }
+    .card h2 { font-size: 16px; font-weight: 500; margin-bottom: 16px; color: #1a73e8; }
 
-    /* CSV入力 */
     .csv-input {
       width: 100%;
       min-height: 180px;
@@ -95,23 +64,11 @@
       transition: border-color 0.2s;
     }
 
-    .csv-input:focus {
-      outline: none;
-      border-color: #1a73e8;
-    }
+    .csv-input:focus { outline: none; border-color: #1a73e8; }
 
-    .csv-hint {
-      font-size: 12px;
-      color: #888;
-      margin-top: 8px;
-      line-height: 1.6;
-    }
+    .csv-hint { font-size: 12px; color: #888; margin-top: 8px; line-height: 1.6; }
 
-    .btn-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 16px;
-    }
+    .btn-row { display: flex; gap: 8px; margin-top: 16px; }
 
     .btn {
       padding: 10px 24px;
@@ -123,35 +80,14 @@
       font-weight: 500;
     }
 
-    .btn-primary {
-      background: #1a73e8;
-      color: #fff;
-    }
-
+    .btn-primary { background: #1a73e8; color: #fff; }
     .btn-primary:hover { background: #1557b0; }
-
-    .btn-secondary {
-      background: #e8eaed;
-      color: #333;
-    }
-
+    .btn-secondary { background: #e8eaed; color: #333; }
     .btn-secondary:hover { background: #d2d5d9; }
-
-    .btn-danger {
-      background: #ea4335;
-      color: #fff;
-      padding: 4px 10px;
-      font-size: 12px;
-    }
-
+    .btn-danger { background: #ea4335; color: #fff; padding: 4px 10px; font-size: 12px; }
     .btn-danger:hover { background: #c5221f; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* メッセージ */
     .message {
       padding: 12px 16px;
       border-radius: 6px;
@@ -160,28 +96,12 @@
       display: none;
     }
 
-    .message.success {
-      background: #e6f4ea;
-      color: #137333;
-      display: block;
-    }
+    .message.success { background: #e6f4ea; color: #137333; display: block; }
+    .message.error { background: #fce8e6; color: #c5221f; display: block; }
 
-    .message.error {
-      background: #fce8e6;
-      color: #c5221f;
-      display: block;
-    }
+    .table-wrapper { overflow-x: auto; }
 
-    /* テーブル */
-    .table-wrapper {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
 
     th {
       background: #f8f9fa;
@@ -193,33 +113,16 @@
       white-space: nowrap;
     }
 
-    td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #eee;
-    }
+    td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+    tr:hover td { background: #f8f9ff; }
 
-    tr:hover td {
-      background: #f8f9ff;
-    }
+    .no-data { text-align: center; color: #999; padding: 40px; font-size: 14px; }
 
-    .no-data {
-      text-align: center;
-      color: #999;
-      padding: 40px;
-      font-size: 14px;
-    }
-
-    /* ローディング */
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: #888;
-    }
+    .loading { text-align: center; padding: 20px; color: #888; }
 
     .spinner {
       display: inline-block;
-      width: 20px;
-      height: 20px;
+      width: 20px; height: 20px;
       border: 2px solid #ccc;
       border-top-color: #1a73e8;
       border-radius: 50%;
@@ -230,35 +133,18 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* セクション表示制御 */
     .section { display: none; }
     .section.active { display: block; }
 
-    /* 集計 */
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 12px;
     }
 
-    .summary-item {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .summary-item .label {
-      font-size: 12px;
-      color: #888;
-      margin-bottom: 4px;
-    }
-
-    .summary-item .value {
-      font-size: 24px;
-      font-weight: 600;
-      color: #1a73e8;
-    }
+    .summary-item { background: #f8f9fa; border-radius: 8px; padding: 16px; text-align: center; }
+    .summary-item .label { font-size: 12px; color: #888; margin-bottom: 4px; }
+    .summary-item .value { font-size: 24px; font-weight: 600; color: #1a73e8; }
 
     @media (max-width: 600px) {
       .container { padding: 12px; }
@@ -276,48 +162,35 @@
   </div>
 
   <div class="container">
-    <!-- タブ -->
     <div class="tabs">
       <button class="tab active" onclick="showSection('import')">データ取込</button>
       <button class="tab" onclick="showSection('list')">配送一覧</button>
     </div>
 
-    <!-- メッセージ -->
     <div class="message" id="msg"></div>
 
-    <!-- CSV取込セクション -->
+    <!-- データ取込セクション -->
     <div class="section active" id="section-import">
       <div class="card">
         <h2>データ貼り付け（Excel / CSV対応）</h2>
         <textarea class="csv-input" id="csvInput"
-          placeholder="ここにExcelからコピーしたデータ、またはCSVデータを貼り付けてください&#10;&#10;Excelの場合: セルを選択 → コピー → ここに貼り付け&#10;CSVの場合:&#10;12345,山田太郎,東京都新宿区1-2-3,50000,自社便,現金&#10;12346,佐藤花子,東京都渋谷区4-5-6,120000,外注便,カード"></textarea>
+          placeholder="Excelからセルをコピーしてここに貼り付けてください&#10;&#10;ヘッダー行も含めてそのまま全列コピー＆ペーストできます"></textarea>
         <div class="csv-hint">
-          列の順番: 伝票No, 顧客名, 住所, 金額, 配送方法, 支払方法<br>
           ※Excelからの貼り付け（タブ区切り）・CSV（カンマ区切り）の両方に対応<br>
           ※ヘッダー行がある場合は自動でスキップされます
         </div>
         <div class="btn-row">
-          <button class="btn btn-primary" id="btnImport" onclick="importCsv()">データを保存</button>
+          <button class="btn btn-primary" id="btnImport" onclick="importData()">データを保存</button>
           <button class="btn btn-secondary" onclick="clearInput()">クリア</button>
         </div>
       </div>
 
-      <!-- プレビュー -->
       <div class="card" id="previewCard" style="display:none;">
         <h2>プレビュー</h2>
         <div class="table-wrapper">
           <table id="previewTable">
-            <thead>
-              <tr>
-                <th>伝票No</th>
-                <th>顧客名</th>
-                <th>住所</th>
-                <th>金額</th>
-                <th>配送方法</th>
-                <th>支払方法</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
+            <thead id="previewHead"></thead>
+            <tbody id="previewBody"></tbody>
           </table>
         </div>
       </div>
@@ -336,14 +209,6 @@
             <div class="label">合計金額</div>
             <div class="value" id="sumAmount">-</div>
           </div>
-          <div class="summary-item">
-            <div class="label">自社便</div>
-            <div class="value" id="sumOwnDelivery">-</div>
-          </div>
-          <div class="summary-item">
-            <div class="label">外注便</div>
-            <div class="value" id="sumExtDelivery">-</div>
-          </div>
         </div>
       </div>
 
@@ -351,18 +216,7 @@
         <h2>配送データ一覧</h2>
         <div class="table-wrapper">
           <table id="dataTable">
-            <thead>
-              <tr>
-                <th>日付</th>
-                <th>伝票No</th>
-                <th>顧客名</th>
-                <th>住所</th>
-                <th>金額</th>
-                <th>配送方法</th>
-                <th>支払方法</th>
-                <th></th>
-              </tr>
-            </thead>
+            <thead id="dataHead"></thead>
             <tbody id="dataBody"></tbody>
           </table>
         </div>
@@ -375,7 +229,7 @@
   </div>
 
   <script>
-    // 今日の日付表示
+    // 今日の日付
     var now = new Date();
     var y = now.getFullYear();
     var m = ('0' + (now.getMonth() + 1)).slice(-2);
@@ -384,57 +238,10 @@
     var weekDays = ['日', '月', '火', '水', '木', '金', '土'];
     document.getElementById('todayDate').textContent = today + '（' + weekDays[now.getDay()] + '）';
 
-    // CSV入力時にプレビュー表示
-    document.getElementById('csvInput').addEventListener('input', function() {
-      updatePreview();
-    });
-
-    function updatePreview() {
-      var text = document.getElementById('csvInput').value.trim();
-      var card = document.getElementById('previewCard');
-      if (!text) {
-        card.style.display = 'none';
-        return;
-      }
-
-      var rows = parseCsvClient(text);
-      if (rows.length === 0) {
-        card.style.display = 'none';
-        return;
-      }
-
-      // ヘッダー判定
-      var headerKeywords = ['伝票', '顧客', '住所', '金額', '配送', '支払'];
-      var firstRow = rows[0];
-      var isHeader = headerKeywords.some(function(kw) {
-        return firstRow.some(function(cell) { return cell.indexOf(kw) !== -1; });
-      });
-      var dataRows = isHeader ? rows.slice(1) : rows;
-
-      var tbody = document.querySelector('#previewTable tbody');
-      tbody.innerHTML = '';
-      dataRows.forEach(function(row) {
-        var tr = document.createElement('tr');
-        for (var i = 0; i < 6; i++) {
-          var td = document.createElement('td');
-          td.textContent = row[i] || '';
-          if (i === 3) {
-            var num = parseInt(row[i]);
-            if (!isNaN(num)) td.textContent = num.toLocaleString() + '円';
-          }
-          tr.appendChild(td);
-        }
-        tbody.appendChild(tr);
-      });
-
-      card.style.display = 'block';
-    }
-
-    function parseCsvClient(text) {
-      // 区切り文字を自動判定: タブがあればTSV（Excel貼り付け）、なければCSV
+    // --- パーサー ---
+    function parseText(text) {
       var firstLine = text.split(/\r?\n/)[0] || '';
       var delimiter = (firstLine.indexOf('\t') !== -1) ? '\t' : ',';
-
       var rows = [];
       var lines = text.split(/\r?\n/);
       for (var i = 0; i < lines.length; i++) {
@@ -447,24 +254,13 @@
           var ch = line[j];
           if (inQuotes) {
             if (ch === '"') {
-              if (j + 1 < line.length && line[j + 1] === '"') {
-                current += '"';
-                j++;
-              } else {
-                inQuotes = false;
-              }
-            } else {
-              current += ch;
-            }
+              if (j + 1 < line.length && line[j + 1] === '"') { current += '"'; j++; }
+              else { inQuotes = false; }
+            } else { current += ch; }
           } else {
-            if (ch === '"') {
-              inQuotes = true;
-            } else if (ch === delimiter) {
-              cells.push(current);
-              current = '';
-            } else {
-              current += ch;
-            }
+            if (ch === '"') { inQuotes = true; }
+            else if (ch === delimiter) { cells.push(current); current = ''; }
+            else { current += ch; }
           }
         }
         cells.push(current);
@@ -473,13 +269,70 @@
       return rows;
     }
 
-    // CSV保存
-    function importCsv() {
-      var text = document.getElementById('csvInput').value.trim();
-      if (!text) {
-        showMsg('データを入力してください。', 'error');
-        return;
+    function detectHeader(rows) {
+      if (rows.length === 0) return { headers: null, dataRows: rows };
+      var firstRow = rows[0];
+      var keywords = ['No', '号車', '伝票', '顧客', '住所', '金額', '配送', '支払', '方法', '店'];
+      var count = 0;
+      keywords.forEach(function(kw) {
+        firstRow.forEach(function(cell) {
+          if (cell.indexOf(kw) !== -1) count++;
+        });
+      });
+      if (count >= 2) {
+        return { headers: firstRow, dataRows: rows.slice(1) };
       }
+      return { headers: null, dataRows: rows };
+    }
+
+    // --- プレビュー ---
+    document.getElementById('csvInput').addEventListener('input', updatePreview);
+
+    function updatePreview() {
+      var text = document.getElementById('csvInput').value.trim();
+      var card = document.getElementById('previewCard');
+      if (!text) { card.style.display = 'none'; return; }
+
+      var rows = parseText(text);
+      if (rows.length === 0) { card.style.display = 'none'; return; }
+
+      var result = detectHeader(rows);
+      var headers = result.headers;
+      var dataRows = result.dataRows;
+
+      // ヘッダー行
+      var thead = document.getElementById('previewHead');
+      thead.innerHTML = '';
+      var trH = document.createElement('tr');
+      var colCount = 0;
+      rows.forEach(function(r) { if (r.length > colCount) colCount = r.length; });
+      for (var i = 0; i < colCount; i++) {
+        var th = document.createElement('th');
+        th.textContent = headers ? headers[i] || '' : '列' + (i + 1);
+        trH.appendChild(th);
+      }
+      thead.appendChild(trH);
+
+      // データ行
+      var tbody = document.getElementById('previewBody');
+      tbody.innerHTML = '';
+      dataRows.forEach(function(row) {
+        var tr = document.createElement('tr');
+        for (var i = 0; i < colCount; i++) {
+          var td = document.createElement('td');
+          td.textContent = row[i] || '';
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      });
+
+      card.style.display = 'block';
+    }
+
+    // --- データ保存 ---
+    function importData() {
+      var text = document.getElementById('csvInput').value.trim();
+      if (!text) { showMsg('データを入力してください。', 'error'); return; }
 
       var btn = document.getElementById('btnImport');
       btn.disabled = true;
@@ -505,36 +358,29 @@
         .importCsvData(text);
     }
 
-    // 入力クリア
     function clearInput() {
       document.getElementById('csvInput').value = '';
       document.getElementById('previewCard').style.display = 'none';
       hideMsg();
     }
 
-    // タブ切替
+    // --- タブ切替 ---
     function showSection(name) {
-      document.querySelectorAll('.section').forEach(function(el) {
-        el.classList.remove('active');
-      });
-      document.querySelectorAll('.tab').forEach(function(el) {
-        el.classList.remove('active');
-      });
-
+      document.querySelectorAll('.section').forEach(function(el) { el.classList.remove('active'); });
+      document.querySelectorAll('.tab').forEach(function(el) { el.classList.remove('active'); });
       document.getElementById('section-' + name).classList.add('active');
       event.target.classList.add('active');
-
-      if (name === 'list') {
-        loadData();
-      }
+      if (name === 'list') loadData();
     }
 
-    // データ読み込み
+    // --- データ読み込み ---
     function loadData() {
       var tbody = document.getElementById('dataBody');
+      var thead = document.getElementById('dataHead');
       var noData = document.getElementById('noData');
       var loading = document.getElementById('loadingData');
 
+      thead.innerHTML = '';
       tbody.innerHTML = '';
       noData.style.display = 'none';
       loading.style.display = 'block';
@@ -542,34 +388,46 @@
       google.script.run
         .withSuccessHandler(function(result) {
           loading.style.display = 'none';
-          if (!result.success) {
-            showMsg(result.message, 'error');
+          if (!result.success) { showMsg(result.message, 'error'); return; }
+
+          var headers = result.headers || [];
+          var data = result.data || [];
+
+          if (data.length === 0) {
+            noData.style.display = 'block';
+            updateSummary(headers, []);
             return;
           }
 
-          var data = result.data;
-          if (data.length === 0) {
-            noData.style.display = 'block';
-            updateSummary([]);
-            return;
-          }
+          // ヘッダー行を生成
+          var trH = document.createElement('tr');
+          headers.forEach(function(h) {
+            var th = document.createElement('th');
+            th.textContent = h;
+            trH.appendChild(th);
+          });
+          var thAction = document.createElement('th');
+          thAction.textContent = '';
+          trH.appendChild(thAction);
+          thead.appendChild(trH);
+
+          // データ行を生成
+          // 金額列のインデックスを探す
+          var amountIdx = findColIndex(headers, '金額');
 
           data.forEach(function(row, idx) {
             var tr = document.createElement('tr');
-            for (var i = 0; i < 7; i++) {
+            for (var i = 0; i < headers.length; i++) {
               var td = document.createElement('td');
-              var val = row[i] || '';
-              if (i === 0 && val instanceof Date) {
-                val = val.toLocaleDateString('ja-JP');
-              }
-              if (i === 4) {
-                var num = parseInt(val);
+              var val = row[i] != null ? row[i] : '';
+              // 金額列はフォーマット
+              if (i === amountIdx) {
+                var num = parseFloat(String(val).replace(/,/g, ''));
                 if (!isNaN(num)) val = num.toLocaleString() + '円';
               }
               td.textContent = val;
               tr.appendChild(td);
             }
-            // 削除ボタン
             var tdDel = document.createElement('td');
             var btnDel = document.createElement('button');
             btnDel.className = 'btn btn-danger';
@@ -582,7 +440,7 @@
             tbody.appendChild(tr);
           });
 
-          updateSummary(data);
+          updateSummary(headers, data);
         })
         .withFailureHandler(function(err) {
           loading.style.display = 'none';
@@ -591,22 +449,27 @@
         .getSavedData(today);
     }
 
+    // ヘッダー名からインデックスを探す
+    function findColIndex(headers, keyword) {
+      for (var i = 0; i < headers.length; i++) {
+        if (String(headers[i]).indexOf(keyword) !== -1) return i;
+      }
+      return -1;
+    }
+
     // 集計更新
-    function updateSummary(data) {
+    function updateSummary(headers, data) {
       document.getElementById('sumCount').textContent = data.length + '件';
+
+      var amountIdx = findColIndex(headers, '金額');
       var total = 0;
-      var ownCount = 0;
-      var extCount = 0;
-      data.forEach(function(row) {
-        var amount = parseInt(row[4]) || 0;
-        total += amount;
-        var method = String(row[5] || '').trim();
-        if (method.indexOf('自社') !== -1) ownCount++;
-        else if (method.indexOf('外注') !== -1) extCount++;
-      });
+      if (amountIdx !== -1) {
+        data.forEach(function(row) {
+          var v = parseFloat(String(row[amountIdx] || '0').replace(/,/g, ''));
+          if (!isNaN(v)) total += v;
+        });
+      }
       document.getElementById('sumAmount').textContent = total.toLocaleString() + '円';
-      document.getElementById('sumOwnDelivery').textContent = ownCount + '件';
-      document.getElementById('sumExtDelivery').textContent = extCount + '件';
     }
 
     // データ削除
@@ -614,30 +477,21 @@
       if (!confirm('このデータを削除しますか？')) return;
       google.script.run
         .withSuccessHandler(function(result) {
-          if (result.success) {
-            showMsg(result.message, 'success');
-            loadData();
-          } else {
-            showMsg(result.message, 'error');
-          }
+          if (result.success) { showMsg(result.message, 'success'); loadData(); }
+          else { showMsg(result.message, 'error'); }
         })
-        .withFailureHandler(function(err) {
-          showMsg('削除エラー: ' + err.message, 'error');
-        })
+        .withFailureHandler(function(err) { showMsg('削除エラー: ' + err.message, 'error'); })
         .deleteRow(idx);
     }
 
-    // メッセージ表示
+    // メッセージ
     function showMsg(text, type) {
       var el = document.getElementById('msg');
       el.textContent = text;
       el.className = 'message ' + type;
       setTimeout(function() { el.className = 'message'; }, 5000);
     }
-
-    function hideMsg() {
-      document.getElementById('msg').className = 'message';
-    }
+    function hideMsg() { document.getElementById('msg').className = 'message'; }
   </script>
 </body>
 </html>
