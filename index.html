@@ -146,6 +146,35 @@
     .summary-item .label { font-size: 12px; color: #888; margin-bottom: 4px; }
     .summary-item .value { font-size: 24px; font-weight: 600; color: #1a73e8; }
 
+    .status-badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      background: #fce8e6;
+      color: #c5221f;
+    }
+
+    .status-badge.ready {
+      background: #e6f4ea;
+      color: #137333;
+    }
+
+    .btn-large {
+      padding: 14px 32px;
+      font-size: 16px;
+    }
+
+    .save-card {
+      text-align: center;
+    }
+
+    .save-card .btn-row {
+      justify-content: center;
+    }
+
     @media (max-width: 600px) {
       .container { padding: 12px; }
       .card { padding: 16px; }
@@ -171,18 +200,16 @@
 
     <!-- データ取込セクション -->
     <div class="section active" id="section-import">
+      <!-- ① 配送データ -->
       <div class="card">
-        <h2>データ貼り付け（Excel / CSV対応）</h2>
+        <h2>① 配送データ貼り付け（Excel / CSV）</h2>
         <textarea class="csv-input" id="csvInput"
           placeholder="Excelからセルをコピーしてここに貼り付けてください&#10;&#10;ヘッダー行も含めてそのまま全列コピー＆ペーストできます"></textarea>
         <div class="csv-hint">
           ※Excelからの貼り付け（タブ区切り）・CSV（カンマ区切り）の両方に対応<br>
           ※ヘッダー行がある場合は自動でスキップされます
         </div>
-        <div class="btn-row">
-          <button class="btn btn-primary" id="btnImport" onclick="importData()">データを保存</button>
-          <button class="btn btn-secondary" onclick="clearInput()">クリア</button>
-        </div>
+        <div class="status-badge" id="statusCsv">未入力</div>
       </div>
 
       <div class="card" id="previewCard" style="display:none;">
@@ -195,9 +222,9 @@
         </div>
       </div>
 
-      <!-- 配送順データ -->
+      <!-- ② 配送順データ -->
       <div class="card">
-        <h2>配送順データ貼り付け</h2>
+        <h2>② 配送順データ貼り付け</h2>
         <textarea class="csv-input" id="routeInput" style="min-height:120px;"
           placeholder="配送順のデータをここに貼り付けてください&#10;&#10;例: 722839  80120  9052810160  45  1  1  &  80103&#10;（伝票No / 配送日 / 電話番号 / 店コード / 号車 / 何件目 / 配送センター / 契約日）"></textarea>
         <div class="csv-hint">
@@ -205,9 +232,14 @@
           ※配送センターコードは配送センターごとに異なります<br>
           ※伝票Noで配送データと自動で紐付けされます
         </div>
+        <div class="status-badge" id="statusRoute">未入力</div>
+      </div>
+
+      <!-- まとめて保存 -->
+      <div class="card save-card">
         <div class="btn-row">
-          <button class="btn btn-primary" id="btnRouteImport" onclick="importRouteData()">配送順を保存</button>
-          <button class="btn btn-secondary" onclick="clearRouteInput()">クリア</button>
+          <button class="btn btn-primary btn-large" id="btnSaveAll" onclick="saveAll()" disabled>両方のデータを入力してください</button>
+          <button class="btn btn-secondary" onclick="clearAll()">すべてクリア</button>
         </div>
       </div>
     </div>
@@ -301,8 +333,36 @@
       return { headers: null, dataRows: rows };
     }
 
-    // --- プレビュー ---
-    document.getElementById('csvInput').addEventListener('input', updatePreview);
+    // --- 入力状態の監視 ---
+    document.getElementById('csvInput').addEventListener('input', function() {
+      updatePreview();
+      updateSaveButton();
+    });
+    document.getElementById('routeInput').addEventListener('input', function() {
+      updateSaveButton();
+    });
+
+    function updateSaveButton() {
+      var hasCsv = document.getElementById('csvInput').value.trim() !== '';
+      var hasRoute = document.getElementById('routeInput').value.trim() !== '';
+      var btn = document.getElementById('btnSaveAll');
+
+      var badgeCsv = document.getElementById('statusCsv');
+      var badgeRoute = document.getElementById('statusRoute');
+
+      badgeCsv.textContent = hasCsv ? '入力済み' : '未入力';
+      badgeCsv.className = 'status-badge' + (hasCsv ? ' ready' : '');
+      badgeRoute.textContent = hasRoute ? '入力済み' : '未入力';
+      badgeRoute.className = 'status-badge' + (hasRoute ? ' ready' : '');
+
+      if (hasCsv && hasRoute) {
+        btn.disabled = false;
+        btn.textContent = 'まとめて保存';
+      } else {
+        btn.disabled = true;
+        btn.textContent = '両方のデータを入力してください';
+      }
+    }
 
     function updatePreview() {
       var text = document.getElementById('csvInput').value.trim();
@@ -316,7 +376,6 @@
       var headers = result.headers;
       var dataRows = result.dataRows;
 
-      // ヘッダー行
       var thead = document.getElementById('previewHead');
       thead.innerHTML = '';
       var trH = document.createElement('tr');
@@ -329,7 +388,6 @@
       }
       thead.appendChild(trH);
 
-      // データ行
       var tbody = document.getElementById('previewBody');
       tbody.innerHTML = '';
       dataRows.forEach(function(row) {
@@ -345,71 +403,63 @@
       card.style.display = 'block';
     }
 
-    // --- データ保存 ---
-    function importData() {
-      var text = document.getElementById('csvInput').value.trim();
-      if (!text) { showMsg('データを入力してください。', 'error'); return; }
+    // --- まとめて保存 ---
+    function saveAll() {
+      var csvText = document.getElementById('csvInput').value.trim();
+      var routeText = document.getElementById('routeInput').value.trim();
+      if (!csvText || !routeText) {
+        showMsg('両方のデータを入力してください。', 'error');
+        return;
+      }
 
-      var btn = document.getElementById('btnImport');
+      var btn = document.getElementById('btnSaveAll');
       btn.disabled = true;
       btn.textContent = '保存中...';
 
+      // まず配送データを保存、次に配送順データを保存
       google.script.run
-        .withSuccessHandler(function(result) {
-          btn.disabled = false;
-          btn.textContent = 'データを保存';
-          if (result.success) {
-            showMsg(result.message, 'success');
-            document.getElementById('csvInput').value = '';
-            document.getElementById('previewCard').style.display = 'none';
-          } else {
-            showMsg(result.message, 'error');
+        .withSuccessHandler(function(result1) {
+          if (!result1.success) {
+            btn.disabled = false;
+            btn.textContent = 'まとめて保存';
+            showMsg('配送データ: ' + result1.message, 'error');
+            return;
           }
+          // 配送順データも保存
+          google.script.run
+            .withSuccessHandler(function(result2) {
+              btn.disabled = false;
+              updateSaveButton();
+              if (result2.success) {
+                showMsg(result1.message + ' / ' + result2.message, 'success');
+                document.getElementById('csvInput').value = '';
+                document.getElementById('routeInput').value = '';
+                document.getElementById('previewCard').style.display = 'none';
+                updateSaveButton();
+              } else {
+                showMsg('配送順データ: ' + result2.message, 'error');
+              }
+            })
+            .withFailureHandler(function(err) {
+              btn.disabled = false;
+              updateSaveButton();
+              showMsg('配送順データ通信エラー: ' + err.message, 'error');
+            })
+            .importRouteData(routeText);
         })
         .withFailureHandler(function(err) {
           btn.disabled = false;
-          btn.textContent = 'データを保存';
-          showMsg('通信エラー: ' + err.message, 'error');
+          updateSaveButton();
+          showMsg('配送データ通信エラー: ' + err.message, 'error');
         })
-        .importCsvData(text);
+        .importCsvData(csvText);
     }
 
-    function clearInput() {
+    function clearAll() {
       document.getElementById('csvInput').value = '';
-      document.getElementById('previewCard').style.display = 'none';
-      hideMsg();
-    }
-
-    // --- 配送順データ保存 ---
-    function importRouteData() {
-      var text = document.getElementById('routeInput').value.trim();
-      if (!text) { showMsg('配送順データを入力してください。', 'error'); return; }
-
-      var btn = document.getElementById('btnRouteImport');
-      btn.disabled = true;
-      btn.textContent = '保存中...';
-
-      google.script.run
-        .withSuccessHandler(function(result) {
-          btn.disabled = false;
-          btn.textContent = '配送順を保存';
-          if (result.success) {
-            showMsg(result.message, 'success');
-            document.getElementById('routeInput').value = '';
-          } else {
-            showMsg(result.message, 'error');
-          }
-        })
-        .withFailureHandler(function(err) {
-          btn.disabled = false;
-          btn.textContent = '配送順を保存';
-          showMsg('通信エラー: ' + err.message, 'error');
-        })
-        .importRouteData(text);
-    }
-
-    function clearRouteInput() {
       document.getElementById('routeInput').value = '';
+      document.getElementById('previewCard').style.display = 'none';
+      updateSaveButton();
       hideMsg();
     }
 
