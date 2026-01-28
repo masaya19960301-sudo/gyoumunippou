@@ -176,7 +176,7 @@ function parseText(text) {
   return rows;
 }
 
-// --- 保存済みデータ取得（配送順データも結合）---
+// --- 保存済みデータ取得（配送順データの配送日で絞り込み）---
 
 function getSavedData(date) {
   try {
@@ -190,18 +190,6 @@ function getSavedData(date) {
     var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
     var allData = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
 
-    if (date) {
-      allData = allData.filter(function(row) {
-        var rowDate = '';
-        if (row[0] instanceof Date) {
-          rowDate = Utilities.formatDate(row[0], 'Asia/Tokyo', 'yyyy/MM/dd');
-        } else {
-          rowDate = String(row[0]);
-        }
-        return rowDate === date;
-      });
-    }
-
     // Date型を文字列に変換
     allData = allData.map(function(row) {
       return row.map(function(cell) {
@@ -212,9 +200,8 @@ function getSavedData(date) {
       });
     });
 
-    // 配送順データを結合
-    var routeMap = getRouteMap(date);
-    // 伝票No列のインデックスを探す
+    // 配送順データを全件取得して結合
+    var routeMap = getRouteMap();
     var slipIdx = -1;
     for (var i = 0; i < headers.length; i++) {
       if (String(headers[i]).indexOf('伝票') !== -1) { slipIdx = i; break; }
@@ -233,6 +220,22 @@ function getSavedData(date) {
           return row.concat(['', '', '']);
         }
       });
+
+      // 配送日（配送順データの配送日）で絞り込む
+      if (date) {
+        var deliveryDateColIdx = headers.length - 1; // 配送日は最後の列
+        allData = allData.filter(function(row) {
+          var dd = String(row[deliveryDateColIdx]).trim();
+          return dd === date;
+        });
+      }
+    } else {
+      // 配送順データがない場合は取込日で絞り込み
+      if (date) {
+        allData = allData.filter(function(row) {
+          return String(row[0]).trim() === date;
+        });
+      }
     }
 
     return { success: true, headers: headers, data: allData };
@@ -242,9 +245,10 @@ function getSavedData(date) {
 }
 
 /**
- * 配送順データをマップとして取得（伝票No → {号車, 何件目, 配送日}）
+ * 配送順データをマップとして全件取得（伝票No → {号車, 何件目, 配送日}）
+ * 配送日は配送日コードからyyyy/MM/dd形式に変換
  */
-function getRouteMap(date) {
+function getRouteMap() {
   var map = {};
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -258,25 +262,15 @@ function getRouteMap(date) {
     var data = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
 
     data.forEach(function(row) {
-      var rowDate = '';
-      if (row[0] instanceof Date) {
-        rowDate = Utilities.formatDate(row[0], 'Asia/Tokyo', 'yyyy/MM/dd');
-      } else {
-        rowDate = String(row[0]);
-      }
+      var slipNo = String(row[1]).trim();
+      var rawDate = String(row[2]).trim();
+      var deliveryDate = deliveryCodeToYMD(rawDate);
 
-      if (!date || rowDate === date) {
-        var slipNo = String(row[1]).trim();
-        // 配送日コードを変換 (80120 → R8/01/20)
-        var rawDate = String(row[2]).trim();
-        var deliveryDate = parseDeliveryDate(rawDate);
-
-        map[slipNo] = {
-          truck: String(row[5]).trim(),
-          seq: String(row[6]).trim(),
-          deliveryDate: deliveryDate
-        };
-      }
+      map[slipNo] = {
+        truck: String(row[5]).trim(),
+        seq: String(row[6]).trim(),
+        deliveryDate: deliveryDate
+      };
     });
   } catch (e) {
     // エラー時は空のマップを返す
@@ -285,13 +279,36 @@ function getRouteMap(date) {
 }
 
 /**
- * 配送日コードを変換 (80120 → R8/01/20)
+ * 配送日コードをyyyy/MM/dd形式に変換
+ * 例: 80120 → 令和8年1月20日 → 2026/01/20
+ */
+function deliveryCodeToYMD(code) {
+  if (!code || code.length < 5) return code;
+  var s = String(code);
+  var yearStr, monthStr, dayStr;
+  if (s.length === 5) {
+    yearStr = s.substring(0, 1);
+    monthStr = s.substring(1, 3);
+    dayStr = s.substring(3, 5);
+  } else if (s.length === 6) {
+    yearStr = s.substring(0, 2);
+    monthStr = s.substring(2, 4);
+    dayStr = s.substring(4, 6);
+  } else {
+    return code;
+  }
+  // 令和 → 西暦 (令和1年 = 2019年)
+  var reiwaYear = parseInt(yearStr, 10);
+  var adYear = 2018 + reiwaYear;
+  return adYear + '/' + monthStr + '/' + dayStr;
+}
+
+/**
+ * 配送日コードを表示用に変換 (80120 → R8/01/20)
  */
 function parseDeliveryDate(code) {
   if (!code || code.length < 5) return code;
   var s = String(code);
-  // 先頭1桁が令和の年、残りがMMDD
-  // 5桁: YMMDD, 6桁: YYMMDD
   var yearStr, monthStr, dayStr;
   if (s.length === 5) {
     yearStr = s.substring(0, 1);
