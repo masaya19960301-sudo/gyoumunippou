@@ -30,7 +30,7 @@ function getOrCreateRouteSheet() {
   var sheet = ss.getSheetByName(ROUTE_SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(ROUTE_SHEET_NAME);
-    var headers = ['日付', '伝票No', '配送日', '電話番号', 'コード', '号車', '何件目', '区切', '参照コード'];
+    var headers = ['日付', '伝票No', '配送日', '電話番号', '店コード', '号車', '何件目', '配送センター', '契約日'];
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
     sheet.setFrozenRows(1);
@@ -254,7 +254,7 @@ function getRouteMap(date) {
     var lastRow = sheet.getLastRow();
     if (lastRow <= 1) return map;
 
-    // 列: 日付(0), 伝票No(1), 配送日(2), 電話番号(3), コード(4), 号車(5), 何件目(6), 区切(7), 参照コード(8)
+    // 列: 日付(0), 伝票No(1), 配送日(2), 電話番号(3), 店コード(4), 号車(5), 何件目(6), 配送センター(7), 契約日(8)
     var data = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
 
     data.forEach(function(row) {
