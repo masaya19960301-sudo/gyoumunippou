@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      background: #f0f2f5;
+      color: #333;
+    }
+
+    .header {
+      background: #1a73e8;
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    .header .date {
+      margin-left: auto;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* タブ */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 24px;
+      background: #fff;
+      border: none;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      font-size: 14px;
+      color: #666;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: #1a73e8;
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .tab:hover:not(.active) {
+      background: #e8eaed;
+    }
+
+    /* カード */
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: #1a73e8;
+    }
+
+    /* CSV入力 */
+    .csv-input {
+      width: 100%;
+      min-height: 180px;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+
+    .csv-input:focus {
+      outline: none;
+      border-color: #1a73e8;
+    }
+
+    .csv-hint {
+      font-size: 12px;
+      color: #888;
+      margin-top: 8px;
+      line-height: 1.6;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: #1a73e8;
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #1557b0; }
+
+    .btn-secondary {
+      background: #e8eaed;
+      color: #333;
+    }
+
+    .btn-secondary:hover { background: #d2d5d9; }
+
+    .btn-danger {
+      background: #ea4335;
+      color: #fff;
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    .btn-danger:hover { background: #c5221f; }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* メッセージ */
+    .message {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .message.success {
+      background: #e6f4ea;
+      color: #137333;
+      display: block;
+    }
+
+    .message.error {
+      background: #fce8e6;
+      color: #c5221f;
+      display: block;
+    }
+
+    /* テーブル */
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      background: #f8f9fa;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 500;
+      color: #555;
+      border-bottom: 2px solid #e0e0e0;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+    }
+
+    tr:hover td {
+      background: #f8f9ff;
+    }
+
+    .no-data {
+      text-align: center;
+      color: #999;
+      padding: 40px;
+      font-size: 14px;
+    }
+
+    /* ローディング */
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #888;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ccc;
+      border-top-color: #1a73e8;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* セクション表示制御 */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* 集計 */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .summary-item {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .summary-item .label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .summary-item .value {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a73e8;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 12px; }
+      .card { padding: 16px; }
+      .csv-input { min-height: 120px; font-size: 12px; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🚚 家具配送センター 業務日報</h1>
+    <span class="date" id="todayDate"></span>
+  </div>
+
+  <div class="container">
+    <!-- タブ -->
+    <div class="tabs">
+      <button class="tab active" onclick="showSection('import')">CSV取込</button>
+      <button class="tab" onclick="showSection('list')">配送一覧</button>
+    </div>
+
+    <!-- メッセージ -->
+    <div class="message" id="msg"></div>
+
+    <!-- CSV取込セクション -->
+    <div class="section active" id="section-import">
+      <div class="card">
+        <h2>CSVデータ貼り付け</h2>
+        <textarea class="csv-input" id="csvInput"
+          placeholder="ここにCSVデータを貼り付けてください&#10;&#10;例:&#10;12345,山田太郎,東京都新宿区1-2-3,50000,自社便,現金&#10;12346,佐藤花子,東京都渋谷区4-5-6,120000,外注便,カード"></textarea>
+        <div class="csv-hint">
+          列の順番: 伝票No, 顧客名, 住所, 金額, 配送方法, 支払方法<br>
+          ※ヘッダー行がある場合は自動でスキップされます
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnImport" onclick="importCsv()">データを保存</button>
+          <button class="btn btn-secondary" onclick="clearInput()">クリア</button>
+        </div>
+      </div>
+
+      <!-- プレビュー -->
+      <div class="card" id="previewCard" style="display:none;">
+        <h2>プレビュー</h2>
+        <div class="table-wrapper">
+          <table id="previewTable">
+            <thead>
+              <tr>
+                <th>伝票No</th>
+                <th>顧客名</th>
+                <th>住所</th>
+                <th>金額</th>
+                <th>配送方法</th>
+                <th>支払方法</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 配送一覧セクション -->
+    <div class="section" id="section-list">
+      <div class="card">
+        <h2>本日の集計</h2>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="label">配送件数</div>
+            <div class="value" id="sumCount">-</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">合計金額</div>
+            <div class="value" id="sumAmount">-</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">自社便</div>
+            <div class="value" id="sumOwnDelivery">-</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">外注便</div>
+            <div class="value" id="sumExtDelivery">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>配送データ一覧</h2>
+        <div class="table-wrapper">
+          <table id="dataTable">
+            <thead>
+              <tr>
+                <th>日付</th>
+                <th>伝票No</th>
+                <th>顧客名</th>
+                <th>住所</th>
+                <th>金額</th>
+                <th>配送方法</th>
+                <th>支払方法</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="dataBody"></tbody>
+          </table>
+        </div>
+        <div class="no-data" id="noData" style="display:none;">データがありません</div>
+        <div class="loading" id="loadingData" style="display:none;">
+          <span class="spinner"></span>読み込み中...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 今日の日付表示
+    var now = new Date();
+    var y = now.getFullYear();
+    var m = ('0' + (now.getMonth() + 1)).slice(-2);
+    var d = ('0' + now.getDate()).slice(-2);
+    var today = y + '/' + m + '/' + d;
+    var weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+    document.getElementById('todayDate').textContent = today + '（' + weekDays[now.getDay()] + '）';
+
+    // CSV入力時にプレビュー表示
+    document.getElementById('csvInput').addEventListener('input', function() {
+      updatePreview();
+    });
+
+    function updatePreview() {
+      var text = document.getElementById('csvInput').value.trim();
+      var card = document.getElementById('previewCard');
+      if (!text) {
+        card.style.display = 'none';
+        return;
+      }
+
+      var rows = parseCsvClient(text);
+      if (rows.length === 0) {
+        card.style.display = 'none';
+        return;
+      }
+
+      // ヘッダー判定
+      var headerKeywords = ['伝票', '顧客', '住所', '金額', '配送', '支払'];
+      var firstRow = rows[0];
+      var isHeader = headerKeywords.some(function(kw) {
+        return firstRow.some(function(cell) { return cell.indexOf(kw) !== -1; });
+      });
+      var dataRows = isHeader ? rows.slice(1) : rows;
+
+      var tbody = document.querySelector('#previewTable tbody');
+      tbody.innerHTML = '';
+      dataRows.forEach(function(row) {
+        var tr = document.createElement('tr');
+        for (var i = 0; i < 6; i++) {
+          var td = document.createElement('td');
+          td.textContent = row[i] || '';
+          if (i === 3) {
+            var num = parseInt(row[i]);
+            if (!isNaN(num)) td.textContent = num.toLocaleString() + '円';
+          }
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      });
+
+      card.style.display = 'block';
+    }
+
+    function parseCsvClient(text) {
+      var rows = [];
+      var lines = text.split(/\r?\n/);
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line === '') continue;
+        var cells = [];
+        var current = '';
+        var inQuotes = false;
+        for (var j = 0; j < line.length; j++) {
+          var ch = line[j];
+          if (inQuotes) {
+            if (ch === '"') {
+              if (j + 1 < line.length && line[j + 1] === '"') {
+                current += '"';
+                j++;
+              } else {
+                inQuotes = false;
+              }
+            } else {
+              current += ch;
+            }
+          } else {
+            if (ch === '"') {
+              inQuotes = true;
+            } else if (ch === ',') {
+              cells.push(current);
+              current = '';
+            } else {
+              current += ch;
+            }
+          }
+        }
+        cells.push(current);
+        rows.push(cells);
+      }
+      return rows;
+    }
+
+    // CSV保存
+    function importCsv() {
+      var text = document.getElementById('csvInput').value.trim();
+      if (!text) {
+        showMsg('CSVデータを入力してください。', 'error');
+        return;
+      }
+
+      var btn = document.getElementById('btnImport');
+      btn.disabled = true;
+      btn.textContent = '保存中...';
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          btn.disabled = false;
+          btn.textContent = 'データを保存';
+          if (result.success) {
+            showMsg(result.message, 'success');
+            document.getElementById('csvInput').value = '';
+            document.getElementById('previewCard').style.display = 'none';
+          } else {
+            showMsg(result.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.textContent = 'データを保存';
+          showMsg('通信エラー: ' + err.message, 'error');
+        })
+        .importCsvData(text);
+    }
+
+    // 入力クリア
+    function clearInput() {
+      document.getElementById('csvInput').value = '';
+      document.getElementById('previewCard').style.display = 'none';
+      hideMsg();
+    }
+
+    // タブ切替
+    function showSection(name) {
+      document.querySelectorAll('.section').forEach(function(el) {
+        el.classList.remove('active');
+      });
+      document.querySelectorAll('.tab').forEach(function(el) {
+        el.classList.remove('active');
+      });
+
+      document.getElementById('section-' + name).classList.add('active');
+      event.target.classList.add('active');
+
+      if (name === 'list') {
+        loadData();
+      }
+    }
+
+    // データ読み込み
+    function loadData() {
+      var tbody = document.getElementById('dataBody');
+      var noData = document.getElementById('noData');
+      var loading = document.getElementById('loadingData');
+
+      tbody.innerHTML = '';
+      noData.style.display = 'none';
+      loading.style.display = 'block';
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          loading.style.display = 'none';
+          if (!result.success) {
+            showMsg(result.message, 'error');
+            return;
+          }
+
+          var data = result.data;
+          if (data.length === 0) {
+            noData.style.display = 'block';
+            updateSummary([]);
+            return;
+          }
+
+          data.forEach(function(row, idx) {
+            var tr = document.createElement('tr');
+            for (var i = 0; i < 7; i++) {
+              var td = document.createElement('td');
+              var val = row[i] || '';
+              if (i === 0 && val instanceof Date) {
+                val = val.toLocaleDateString('ja-JP');
+              }
+              if (i === 4) {
+                var num = parseInt(val);
+                if (!isNaN(num)) val = num.toLocaleString() + '円';
+              }
+              td.textContent = val;
+              tr.appendChild(td);
+            }
+            // 削除ボタン
+            var tdDel = document.createElement('td');
+            var btnDel = document.createElement('button');
+            btnDel.className = 'btn btn-danger';
+            btnDel.textContent = '削除';
+            btnDel.onclick = (function(index) {
+              return function() { deleteData(index); };
+            })(idx);
+            tdDel.appendChild(btnDel);
+            tr.appendChild(tdDel);
+            tbody.appendChild(tr);
+          });
+
+          updateSummary(data);
+        })
+        .withFailureHandler(function(err) {
+          loading.style.display = 'none';
+          showMsg('読み込みエラー: ' + err.message, 'error');
+        })
+        .getSavedData(today);
+    }
+
+    // 集計更新
+    function updateSummary(data) {
+      document.getElementById('sumCount').textContent = data.length + '件';
+      var total = 0;
+      var ownCount = 0;
+      var extCount = 0;
+      data.forEach(function(row) {
+        var amount = parseInt(row[4]) || 0;
+        total += amount;
+        var method = String(row[5] || '').trim();
+        if (method.indexOf('自社') !== -1) ownCount++;
+        else if (method.indexOf('外注') !== -1) extCount++;
+      });
+      document.getElementById('sumAmount').textContent = total.toLocaleString() + '円';
+      document.getElementById('sumOwnDelivery').textContent = ownCount + '件';
+      document.getElementById('sumExtDelivery').textContent = extCount + '件';
+    }
+
+    // データ削除
+    function deleteData(idx) {
+      if (!confirm('このデータを削除しますか？')) return;
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showMsg(result.message, 'success');
+            loadData();
+          } else {
+            showMsg(result.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          showMsg('削除エラー: ' + err.message, 'error');
+        })
+        .deleteRow(idx);
+    }
+
+    // メッセージ表示
+    function showMsg(text, type) {
+      var el = document.getElementById('msg');
+      el.textContent = text;
+      el.className = 'message ' + type;
+      setTimeout(function() { el.className = 'message'; }, 5000);
+    }
+
+    function hideMsg() {
+      document.getElementById('msg').className = 'message';
+    }
+  </script>
+</body>
+</html>
