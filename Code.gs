@@ -30,15 +30,15 @@ function getOrCreateSheet() {
 }
 
 /**
- * CSVテキストをパースして保存する
- * @param {string} csvText - CSVテキスト
+ * CSV/TSVテキストをパースして保存する
+ * @param {string} csvText - CSV or TSVテキスト（Excel貼り付け対応）
  * @return {Object} 結果オブジェクト
  */
 function importCsvData(csvText) {
   try {
     const rows = parseCsv(csvText);
     if (rows.length === 0) {
-      return { success: false, message: 'CSVデータが空です。' };
+      return { success: false, message: 'データが空です。' };
     }
 
     const sheet = getOrCreateSheet();
@@ -80,11 +80,16 @@ function importCsvData(csvText) {
 }
 
 /**
- * CSVテキストをパースする
- * @param {string} text - CSVテキスト
+ * テキストをパースする（CSV / TSV 自動判定）
+ * Excelからの貼り付けはタブ区切りになるため両方対応
+ * @param {string} text - CSV or TSVテキスト
  * @return {Array} 2次元配列
  */
 function parseCsv(text) {
+  // 区切り文字を自動判定: 最初の行にタブがあればTSV、なければCSV
+  var firstLine = text.split(/\r?\n/)[0] || '';
+  var delimiter = (firstLine.indexOf('\t') !== -1) ? '\t' : ',';
+
   var rows = [];
   var lines = text.split(/\r?\n/);
   for (var i = 0; i < lines.length; i++) {
@@ -111,7 +116,7 @@ function parseCsv(text) {
       } else {
         if (ch === '"') {
           inQuotes = true;
-        } else if (ch === ',') {
+        } else if (ch === delimiter) {
           cells.push(current);
           current = '';
         } else {

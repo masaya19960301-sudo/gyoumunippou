@@ -278,7 +278,7 @@
   <div class="container">
     <!-- タブ -->
     <div class="tabs">
-      <button class="tab active" onclick="showSection('import')">CSV取込</button>
+      <button class="tab active" onclick="showSection('import')">データ取込</button>
       <button class="tab" onclick="showSection('list')">配送一覧</button>
     </div>
 
@@ -288,11 +288,12 @@
     <!-- CSV取込セクション -->
     <div class="section active" id="section-import">
       <div class="card">
-        <h2>CSVデータ貼り付け</h2>
+        <h2>データ貼り付け（Excel / CSV対応）</h2>
         <textarea class="csv-input" id="csvInput"
-          placeholder="ここにCSVデータを貼り付けてください&#10;&#10;例:&#10;12345,山田太郎,東京都新宿区1-2-3,50000,自社便,現金&#10;12346,佐藤花子,東京都渋谷区4-5-6,120000,外注便,カード"></textarea>
+          placeholder="ここにExcelからコピーしたデータ、またはCSVデータを貼り付けてください&#10;&#10;Excelの場合: セルを選択 → コピー → ここに貼り付け&#10;CSVの場合:&#10;12345,山田太郎,東京都新宿区1-2-3,50000,自社便,現金&#10;12346,佐藤花子,東京都渋谷区4-5-6,120000,外注便,カード"></textarea>
         <div class="csv-hint">
           列の順番: 伝票No, 顧客名, 住所, 金額, 配送方法, 支払方法<br>
+          ※Excelからの貼り付け（タブ区切り）・CSV（カンマ区切り）の両方に対応<br>
           ※ヘッダー行がある場合は自動でスキップされます
         </div>
         <div class="btn-row">
@@ -430,6 +431,10 @@
     }
 
     function parseCsvClient(text) {
+      // 区切り文字を自動判定: タブがあればTSV（Excel貼り付け）、なければCSV
+      var firstLine = text.split(/\r?\n/)[0] || '';
+      var delimiter = (firstLine.indexOf('\t') !== -1) ? '\t' : ',';
+
       var rows = [];
       var lines = text.split(/\r?\n/);
       for (var i = 0; i < lines.length; i++) {
@@ -454,7 +459,7 @@
           } else {
             if (ch === '"') {
               inQuotes = true;
-            } else if (ch === ',') {
+            } else if (ch === delimiter) {
               cells.push(current);
               current = '';
             } else {
@@ -472,7 +477,7 @@
     function importCsv() {
       var text = document.getElementById('csvInput').value.trim();
       if (!text) {
-        showMsg('CSVデータを入力してください。', 'error');
+        showMsg('データを入力してください。', 'error');
         return;
       }
 
