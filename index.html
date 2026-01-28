@@ -24,7 +24,7 @@
     .header h1 { font-size: 20px; font-weight: 500; }
     .header .date { margin-left: auto; font-size: 14px; opacity: 0.9; }
 
-    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
     .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
 
@@ -68,7 +68,7 @@
 
     .csv-hint { font-size: 12px; color: #888; margin-top: 8px; line-height: 1.6; }
 
-    .btn-row { display: flex; gap: 8px; margin-top: 16px; }
+    .btn-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
 
     .btn {
       padding: 10px 24px;
@@ -84,8 +84,10 @@
     .btn-primary:hover { background: #1557b0; }
     .btn-secondary { background: #e8eaed; color: #333; }
     .btn-secondary:hover { background: #d2d5d9; }
-    .btn-danger { background: #ea4335; color: #fff; padding: 4px 10px; font-size: 12px; }
+    .btn-danger { background: #ea4335; color: #fff; }
     .btn-danger:hover { background: #c5221f; }
+    .btn-success { background: #34a853; color: #fff; }
+    .btn-success:hover { background: #2d8f47; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .message {
@@ -113,7 +115,7 @@
       white-space: nowrap;
     }
 
-    td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+    td { padding: 8px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
     tr:hover td { background: #f8f9ff; }
 
     .no-data { text-align: center; color: #999; padding: 40px; font-size: 14px; }
@@ -135,16 +137,6 @@
 
     .section { display: none; }
     .section.active { display: block; }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
-    }
-
-    .summary-item { background: #f8f9fa; border-radius: 8px; padding: 16px; text-align: center; }
-    .summary-item .label { font-size: 12px; color: #888; margin-bottom: 4px; }
-    .summary-item .value { font-size: 24px; font-weight: 600; color: #1a73e8; }
 
     .status-badge {
       display: inline-block;
@@ -175,18 +167,131 @@
       justify-content: center;
     }
 
+    /* ファイルドロップエリア */
+    .drop-zone {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fafafa;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: #1a73e8;
+      background: #e8f0fe;
+    }
+
+    .drop-zone input[type="file"] {
+      display: none;
+    }
+
+    .drop-zone .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .drop-zone .text {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .drop-zone .filename {
+      margin-top: 12px;
+      font-weight: 500;
+      color: #1a73e8;
+    }
+
+    /* 配送一覧フィルタ */
+    .filter-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-item label {
+      font-weight: 500;
+      color: #555;
+    }
+
+    .filter-item select {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      min-width: 150px;
+    }
+
+    /* 編集可能テーブル */
+    .edit-table input[type="text"],
+    .edit-table input[type="number"] {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .edit-table input:focus {
+      outline: none;
+      border-color: #1a73e8;
+    }
+
+    .edit-table .seq-input {
+      width: 50px;
+      text-align: center;
+    }
+
+    .edit-table .check-cell {
+      text-align: center;
+    }
+
+    .edit-table .check-cell input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .edit-table .num-input {
+      width: 60px;
+      text-align: center;
+    }
+
+    .edit-table .biko-input {
+      min-width: 120px;
+    }
+
+    .zankin-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #fff3cd;
+      color: #856404;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
     @media (max-width: 600px) {
       .container { padding: 12px; }
       .card { padding: 16px; }
       .csv-input { min-height: 120px; font-size: 12px; }
-      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .filter-row { flex-direction: column; align-items: stretch; }
     }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <h1>🚚 家具配送センター 業務日報</h1>
+    <h1>家具配送センター 業務日報</h1>
     <span class="date" id="todayDate"></span>
   </div>
 
@@ -202,11 +307,11 @@
     <div class="section active" id="section-import">
       <!-- ① 配送データ -->
       <div class="card">
-        <h2>① 配送データ貼り付け（Excel / CSV）</h2>
+        <h2>① 配送データ貼り付け（Excel）</h2>
         <textarea class="csv-input" id="csvInput"
           placeholder="Excelからセルをコピーしてここに貼り付けてください&#10;&#10;ヘッダー行も含めてそのまま全列コピー＆ペーストできます"></textarea>
         <div class="csv-hint">
-          ※Excelからの貼り付け（タブ区切り）・CSV（カンマ区切り）の両方に対応<br>
+          ※Excelからの貼り付け（タブ区切り）に対応<br>
           ※ヘッダー行がある場合は自動でスキップされます
         </div>
         <div class="status-badge" id="statusCsv">未入力</div>
@@ -222,14 +327,17 @@
         </div>
       </div>
 
-      <!-- ② 配送順データ -->
+      <!-- ② 配送順データ（ファイル選択） -->
       <div class="card">
-        <h2>② 配送順データ貼り付け</h2>
-        <textarea class="csv-input" id="routeInput" style="min-height:120px;"
-          placeholder="配送順のデータをここに貼り付けてください&#10;&#10;例: 722839  80120  9052810160  45  1  1  &  80103&#10;（伝票No / 配送日 / 電話番号 / 店コード / 号車 / 何件目 / 配送センター / 契約日）"></textarea>
+        <h2>② 配送順データ（CSVファイル）</h2>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('routeFile').click()">
+          <input type="file" id="routeFile" accept=".csv,.txt">
+          <div class="icon">📁</div>
+          <div class="text">クリックしてファイルを選択<br>またはここにドラッグ＆ドロップ</div>
+          <div class="filename" id="routeFilename"></div>
+        </div>
         <div class="csv-hint">
           ※配送日コード: 80120 → 令和8年1月20日<br>
-          ※配送センターコードは配送センターごとに異なります<br>
           ※伝票Noで配送データと自動で紐付けされます
         </div>
         <div class="status-badge" id="statusRoute">未入力</div>
@@ -247,31 +355,53 @@
     <!-- 配送一覧セクション -->
     <div class="section" id="section-list">
       <div class="card">
-        <h2>本日の集計</h2>
-        <div class="summary-grid">
-          <div class="summary-item">
-            <div class="label">配送件数</div>
-            <div class="value" id="sumCount">-</div>
+        <h2>配送データ選択</h2>
+        <div class="filter-row">
+          <div class="filter-item">
+            <label>配送日:</label>
+            <select id="selectDate" onchange="onDateChange()">
+              <option value="">選択してください</option>
+            </select>
           </div>
-          <div class="summary-item">
-            <div class="label">合計金額</div>
-            <div class="value" id="sumAmount">-</div>
+          <div class="filter-item">
+            <label>号車:</label>
+            <select id="selectTruck" onchange="onTruckChange()" disabled>
+              <option value="">選択してください</option>
+            </select>
           </div>
         </div>
       </div>
 
-      <div class="card">
-        <h2>配送データ一覧</h2>
+      <div class="card" id="listCard" style="display:none;">
+        <h2>配送内容 <span id="listTitle"></span></h2>
         <div class="table-wrapper">
-          <table id="dataTable">
-            <thead id="dataHead"></thead>
-            <tbody id="dataBody"></tbody>
+          <table class="edit-table" id="editTable">
+            <thead>
+              <tr>
+                <th>何件目</th>
+                <th>伝票No</th>
+                <th>市区町村</th>
+                <th>地名</th>
+                <th>金額</th>
+                <th>残金</th>
+                <th>玄関先</th>
+                <th>吊り</th>
+                <th>CS</th>
+                <th>備考</th>
+              </tr>
+            </thead>
+            <tbody id="editBody"></tbody>
           </table>
         </div>
-        <div class="no-data" id="noData" style="display:none;">データがありません</div>
-        <div class="loading" id="loadingData" style="display:none;">
-          <span class="spinner"></span>読み込み中...
+        <div class="btn-row" style="margin-top:20px;">
+          <button class="btn btn-success" onclick="saveChanges()">変更を保存</button>
+          <button class="btn btn-secondary" onclick="clearChanges()">クリア</button>
         </div>
+      </div>
+
+      <div class="no-data" id="noData" style="display:none;">日付と号車を選択してください</div>
+      <div class="loading" id="loadingData" style="display:none;">
+        <span class="spinner"></span>読み込み中...
       </div>
     </div>
   </div>
@@ -285,6 +415,10 @@
     var today = y + '/' + m + '/' + d;
     var weekDays = ['日', '月', '火', '水', '木', '金', '土'];
     document.getElementById('todayDate').textContent = today + '（' + weekDays[now.getDay()] + '）';
+
+    // グローバル変数
+    var routeFileContent = '';
+    var currentData = [];
 
     // --- パーサー ---
     function parseText(text) {
@@ -338,13 +472,48 @@
       updatePreview();
       updateSaveButton();
     });
-    document.getElementById('routeInput').addEventListener('input', function() {
-      updateSaveButton();
+
+    // --- ファイル選択 ---
+    document.getElementById('routeFile').addEventListener('change', function(e) {
+      handleFile(e.target.files[0]);
     });
+
+    // --- ドラッグ＆ドロップ ---
+    var dropZone = document.getElementById('dropZone');
+
+    dropZone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      var files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFile(files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        routeFileContent = e.target.result;
+        document.getElementById('routeFilename').textContent = file.name;
+        updateSaveButton();
+      };
+      reader.readAsText(file, 'Shift_JIS'); // 日本語CSVはShift_JISが多い
+    }
 
     function updateSaveButton() {
       var hasCsv = document.getElementById('csvInput').value.trim() !== '';
-      var hasRoute = document.getElementById('routeInput').value.trim() !== '';
+      var hasRoute = routeFileContent !== '';
       var btn = document.getElementById('btnSaveAll');
 
       var badgeCsv = document.getElementById('statusCsv');
@@ -406,8 +575,7 @@
     // --- まとめて保存 ---
     function saveAll() {
       var csvText = document.getElementById('csvInput').value.trim();
-      var routeText = document.getElementById('routeInput').value.trim();
-      if (!csvText || !routeText) {
+      if (!csvText || !routeFileContent) {
         showMsg('両方のデータを入力してください。', 'error');
         return;
       }
@@ -416,7 +584,6 @@
       btn.disabled = true;
       btn.textContent = '保存中...';
 
-      // まず配送データを保存、次に配送順データを保存
       google.script.run
         .withSuccessHandler(function(result1) {
           if (!result1.success) {
@@ -425,7 +592,6 @@
             showMsg('配送データ: ' + result1.message, 'error');
             return;
           }
-          // 配送順データも保存
           google.script.run
             .withSuccessHandler(function(result2) {
               btn.disabled = false;
@@ -433,7 +599,9 @@
               if (result2.success) {
                 showMsg(result1.message + ' / ' + result2.message, 'success');
                 document.getElementById('csvInput').value = '';
-                document.getElementById('routeInput').value = '';
+                routeFileContent = '';
+                document.getElementById('routeFilename').textContent = '';
+                document.getElementById('routeFile').value = '';
                 document.getElementById('previewCard').style.display = 'none';
                 updateSaveButton();
               } else {
@@ -445,7 +613,7 @@
               updateSaveButton();
               showMsg('配送順データ通信エラー: ' + err.message, 'error');
             })
-            .importRouteData(routeText);
+            .importRouteData(routeFileContent);
         })
         .withFailureHandler(function(err) {
           btn.disabled = false;
@@ -457,7 +625,9 @@
 
     function clearAll() {
       document.getElementById('csvInput').value = '';
-      document.getElementById('routeInput').value = '';
+      routeFileContent = '';
+      document.getElementById('routeFilename').textContent = '';
+      document.getElementById('routeFile').value = '';
       document.getElementById('previewCard').style.display = 'none';
       updateSaveButton();
       hideMsg();
@@ -469,118 +639,292 @@
       document.querySelectorAll('.tab').forEach(function(el) { el.classList.remove('active'); });
       document.getElementById('section-' + name).classList.add('active');
       event.target.classList.add('active');
-      if (name === 'list') loadData();
+      if (name === 'list') loadDates();
     }
 
-    // --- データ読み込み ---
-    function loadData() {
-      var tbody = document.getElementById('dataBody');
-      var thead = document.getElementById('dataHead');
-      var noData = document.getElementById('noData');
-      var loading = document.getElementById('loadingData');
-
-      thead.innerHTML = '';
-      tbody.innerHTML = '';
-      noData.style.display = 'none';
-      loading.style.display = 'block';
+    // --- 配送一覧: 日付リスト読み込み ---
+    function loadDates() {
+      var select = document.getElementById('selectDate');
+      select.innerHTML = '<option value="">読み込み中...</option>';
 
       google.script.run
         .withSuccessHandler(function(result) {
-          loading.style.display = 'none';
-          if (!result.success) { showMsg(result.message, 'error'); return; }
-
-          var headers = result.headers || [];
-          var data = result.data || [];
-
-          if (data.length === 0) {
-            noData.style.display = 'block';
-            updateSummary(headers, []);
-            return;
+          select.innerHTML = '<option value="">選択してください</option>';
+          if (result.success && result.dates.length > 0) {
+            result.dates.forEach(function(date) {
+              var opt = document.createElement('option');
+              opt.value = date;
+              opt.textContent = date;
+              select.appendChild(opt);
+            });
           }
-
-          // ヘッダー行を生成
-          var trH = document.createElement('tr');
-          headers.forEach(function(h) {
-            var th = document.createElement('th');
-            th.textContent = h;
-            trH.appendChild(th);
-          });
-          var thAction = document.createElement('th');
-          thAction.textContent = '';
-          trH.appendChild(thAction);
-          thead.appendChild(trH);
-
-          // データ行を生成
-          // 金額列のインデックスを探す
-          var amountIdx = findColIndex(headers, '金額');
-
-          data.forEach(function(row, idx) {
-            var tr = document.createElement('tr');
-            for (var i = 0; i < headers.length; i++) {
-              var td = document.createElement('td');
-              var val = row[i] != null ? row[i] : '';
-              // 金額列はフォーマット
-              if (i === amountIdx) {
-                var num = parseFloat(String(val).replace(/,/g, ''));
-                if (!isNaN(num)) val = num.toLocaleString() + '円';
-              }
-              td.textContent = val;
-              tr.appendChild(td);
-            }
-            var tdDel = document.createElement('td');
-            var btnDel = document.createElement('button');
-            btnDel.className = 'btn btn-danger';
-            btnDel.textContent = '削除';
-            btnDel.onclick = (function(index) {
-              return function() { deleteData(index); };
-            })(idx);
-            tdDel.appendChild(btnDel);
-            tr.appendChild(tdDel);
-            tbody.appendChild(tr);
-          });
-
-          updateSummary(headers, data);
         })
         .withFailureHandler(function(err) {
-          loading.style.display = 'none';
-          showMsg('読み込みエラー: ' + err.message, 'error');
+          select.innerHTML = '<option value="">エラー</option>';
         })
-        .getSavedData(today);
+        .getAvailableDates();
     }
 
-    // ヘッダー名からインデックスを探す
-    function findColIndex(headers, keyword) {
-      for (var i = 0; i < headers.length; i++) {
-        if (String(headers[i]).indexOf(keyword) !== -1) return i;
+    // --- 日付変更時 ---
+    function onDateChange() {
+      var date = document.getElementById('selectDate').value;
+      var truckSelect = document.getElementById('selectTruck');
+
+      document.getElementById('listCard').style.display = 'none';
+      document.getElementById('noData').style.display = 'block';
+
+      if (!date) {
+        truckSelect.disabled = true;
+        truckSelect.innerHTML = '<option value="">選択してください</option>';
+        return;
       }
-      return -1;
-    }
 
-    // 集計更新
-    function updateSummary(headers, data) {
-      document.getElementById('sumCount').textContent = data.length + '件';
+      truckSelect.disabled = true;
+      truckSelect.innerHTML = '<option value="">読み込み中...</option>';
 
-      var amountIdx = findColIndex(headers, '金額');
-      var total = 0;
-      if (amountIdx !== -1) {
-        data.forEach(function(row) {
-          var v = parseFloat(String(row[amountIdx] || '0').replace(/,/g, ''));
-          if (!isNaN(v)) total += v;
-        });
-      }
-      document.getElementById('sumAmount').textContent = total.toLocaleString() + '円';
-    }
-
-    // データ削除
-    function deleteData(idx) {
-      if (!confirm('このデータを削除しますか？')) return;
       google.script.run
         .withSuccessHandler(function(result) {
-          if (result.success) { showMsg(result.message, 'success'); loadData(); }
-          else { showMsg(result.message, 'error'); }
+          truckSelect.innerHTML = '<option value="">選択してください</option>';
+          if (result.success && result.trucks.length > 0) {
+            result.trucks.forEach(function(truck) {
+              var opt = document.createElement('option');
+              opt.value = truck;
+              opt.textContent = truck + '号車';
+              truckSelect.appendChild(opt);
+            });
+            truckSelect.disabled = false;
+          }
         })
-        .withFailureHandler(function(err) { showMsg('削除エラー: ' + err.message, 'error'); })
-        .deleteRow(idx);
+        .withFailureHandler(function(err) {
+          truckSelect.innerHTML = '<option value="">エラー</option>';
+        })
+        .getTrucksForDate(date);
+    }
+
+    // --- 号車変更時 ---
+    function onTruckChange() {
+      var date = document.getElementById('selectDate').value;
+      var truck = document.getElementById('selectTruck').value;
+
+      if (!date || !truck) {
+        document.getElementById('listCard').style.display = 'none';
+        document.getElementById('noData').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('noData').style.display = 'none';
+      document.getElementById('loadingData').style.display = 'block';
+      document.getElementById('listCard').style.display = 'none';
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('loadingData').style.display = 'none';
+          if (result.success) {
+            currentData = result.data;
+            renderEditTable(date, truck);
+          } else {
+            showMsg(result.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('loadingData').style.display = 'none';
+          showMsg('読み込みエラー: ' + err.message, 'error');
+        })
+        .getFilteredData(date, truck);
+    }
+
+    // --- 編集テーブル描画 ---
+    function renderEditTable(date, truck) {
+      document.getElementById('listTitle').textContent = '（' + date + ' / ' + truck + '号車）';
+
+      var tbody = document.getElementById('editBody');
+      tbody.innerHTML = '';
+
+      if (currentData.length === 0) {
+        document.getElementById('noData').style.display = 'block';
+        document.getElementById('listCard').style.display = 'none';
+        return;
+      }
+
+      currentData.forEach(function(item, idx) {
+        var tr = document.createElement('tr');
+        tr.dataset.slipNo = item.slipNo;
+        tr.dataset.idx = idx;
+
+        // 何件目
+        var tdSeq = document.createElement('td');
+        var inputSeq = document.createElement('input');
+        inputSeq.type = 'number';
+        inputSeq.className = 'seq-input';
+        inputSeq.value = item.seq;
+        inputSeq.dataset.field = 'seq';
+        tdSeq.appendChild(inputSeq);
+        tr.appendChild(tdSeq);
+
+        // 伝票No
+        var tdSlip = document.createElement('td');
+        tdSlip.textContent = item.slipNo;
+        tr.appendChild(tdSlip);
+
+        // 市区町村
+        var tdCity = document.createElement('td');
+        tdCity.textContent = item.city;
+        tr.appendChild(tdCity);
+
+        // 地名
+        var tdArea = document.createElement('td');
+        tdArea.textContent = item.area;
+        tr.appendChild(tdArea);
+
+        // 金額
+        var tdAmount = document.createElement('td');
+        var amt = parseFloat(String(item.amount).replace(/,/g, ''));
+        tdAmount.textContent = isNaN(amt) ? item.amount : amt.toLocaleString() + '円';
+        tr.appendChild(tdAmount);
+
+        // 残金
+        var tdZankin = document.createElement('td');
+        if (item.zankin) {
+          var badge = document.createElement('span');
+          badge.className = 'zankin-badge';
+          badge.textContent = item.zankin;
+          tdZankin.appendChild(badge);
+        }
+        tr.appendChild(tdZankin);
+
+        // 玄関先お渡し
+        var tdGenkan = document.createElement('td');
+        tdGenkan.className = 'check-cell';
+        var cbGenkan = document.createElement('input');
+        cbGenkan.type = 'checkbox';
+        cbGenkan.checked = (item.genkan === '1' || item.genkan === 'true' || item.genkan === true);
+        cbGenkan.dataset.field = 'genkan';
+        tdGenkan.appendChild(cbGenkan);
+        tr.appendChild(tdGenkan);
+
+        // 吊り作業
+        var tdTsuri = document.createElement('td');
+        var inputTsuri = document.createElement('input');
+        inputTsuri.type = 'number';
+        inputTsuri.className = 'num-input';
+        inputTsuri.value = item.tsuri || '';
+        inputTsuri.min = '0';
+        inputTsuri.dataset.field = 'tsuri';
+        tdTsuri.appendChild(inputTsuri);
+        tr.appendChild(tdTsuri);
+
+        // CS個数
+        var tdCs = document.createElement('td');
+        var inputCs = document.createElement('input');
+        inputCs.type = 'number';
+        inputCs.className = 'num-input';
+        inputCs.value = item.cs || '';
+        inputCs.min = '0';
+        inputCs.dataset.field = 'cs';
+        tdCs.appendChild(inputCs);
+        tr.appendChild(tdCs);
+
+        // 備考
+        var tdBiko = document.createElement('td');
+        var inputBiko = document.createElement('input');
+        inputBiko.type = 'text';
+        inputBiko.className = 'biko-input';
+        inputBiko.value = item.biko || '';
+        inputBiko.dataset.field = 'biko';
+        tdBiko.appendChild(inputBiko);
+        tr.appendChild(tdBiko);
+
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('listCard').style.display = 'block';
+    }
+
+    // --- 変更を保存 ---
+    function saveChanges() {
+      var tbody = document.getElementById('editBody');
+      var rows = tbody.querySelectorAll('tr');
+      var items = [];
+      var seqUpdates = [];
+
+      rows.forEach(function(tr) {
+        var slipNo = tr.dataset.slipNo;
+        var idx = parseInt(tr.dataset.idx, 10);
+
+        var seqInput = tr.querySelector('input[data-field="seq"]');
+        var genkanCb = tr.querySelector('input[data-field="genkan"]');
+        var tsuriInput = tr.querySelector('input[data-field="tsuri"]');
+        var csInput = tr.querySelector('input[data-field="cs"]');
+        var bikoInput = tr.querySelector('input[data-field="biko"]');
+
+        var newSeq = parseInt(seqInput.value, 10);
+        var oldSeq = currentData[idx].seq;
+
+        // 何件目が変わった場合
+        if (newSeq !== oldSeq) {
+          seqUpdates.push({ slipNo: slipNo, newSeq: newSeq });
+        }
+
+        items.push({
+          slipNo: slipNo,
+          genkan: genkanCb.checked ? '1' : '',
+          tsuri: tsuriInput.value,
+          cs: csInput.value,
+          biko: bikoInput.value
+        });
+      });
+
+      // 報告データ保存
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            // 何件目の更新がある場合
+            if (seqUpdates.length > 0) {
+              var completed = 0;
+              seqUpdates.forEach(function(update) {
+                google.script.run
+                  .withSuccessHandler(function() {
+                    completed++;
+                    if (completed === seqUpdates.length) {
+                      showMsg('保存しました', 'success');
+                      onTruckChange(); // 再読み込み
+                    }
+                  })
+                  .updateRouteSeq(update.slipNo, update.newSeq);
+              });
+            } else {
+              showMsg('保存しました', 'success');
+            }
+          } else {
+            showMsg(result.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          showMsg('保存エラー: ' + err.message, 'error');
+        })
+        .saveReportData(items);
+    }
+
+    // --- クリア ---
+    function clearChanges() {
+      var tbody = document.getElementById('editBody');
+      var rows = tbody.querySelectorAll('tr');
+
+      rows.forEach(function(tr, idx) {
+        var item = currentData[idx];
+
+        var seqInput = tr.querySelector('input[data-field="seq"]');
+        var genkanCb = tr.querySelector('input[data-field="genkan"]');
+        var tsuriInput = tr.querySelector('input[data-field="tsuri"]');
+        var csInput = tr.querySelector('input[data-field="cs"]');
+        var bikoInput = tr.querySelector('input[data-field="biko"]');
+
+        seqInput.value = item.seq;
+        genkanCb.checked = (item.genkan === '1' || item.genkan === 'true' || item.genkan === true);
+        tsuriInput.value = item.tsuri || '';
+        csInput.value = item.cs || '';
+        bikoInput.value = item.biko || '';
+      });
     }
 
     // メッセージ
