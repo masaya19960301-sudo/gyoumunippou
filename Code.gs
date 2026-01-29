@@ -303,11 +303,11 @@ function getFilteredData(date, truck) {
     var paymentIdx = findColIdx(headers, '支払');
 
     // ヘッダーが汎用名（列1, 列2...）の場合、伝票No列から相対位置で推測
-    // 元のExcel構造: No. | 号車 | 伝票No | 金額 | 支払 | 方法 | 店 | 住所
+    // 実際のスプレッドシート構造: 日付 | 列1(No) | 列2(号車) | 列3(伝票No) | 列4(顧客名) | 列5(金額) | 列6(支払) | 列7 | 列8 | 列9(住所)
     if (slipIdx !== -1) {
-      if (amountIdx === -1) amountIdx = slipIdx + 1;  // 金額 = 伝票No + 1
-      if (paymentIdx === -1) paymentIdx = slipIdx + 2; // 支払 = 伝票No + 2
-      if (addressIdx === -1) addressIdx = slipIdx + 5; // 住所 = 伝票No + 5
+      if (amountIdx === -1) amountIdx = slipIdx + 2;  // 金額 = 伝票No + 2
+      if (paymentIdx === -1) paymentIdx = slipIdx + 3; // 支払 = 伝票No + 3
+      if (addressIdx === -1) addressIdx = slipIdx + 6; // 住所 = 伝票No + 6
     }
 
     // デバッグ用：最初の行の全データを表示
