@@ -387,12 +387,42 @@ function getFilteredData(date, truck) {
 function parseAddress(address) {
   if (!address) return { city: '', area: '' };
 
-  // 市区町村を抽出（〇〇市、〇〇区、〇〇町、〇〇村）
-  var cityMatch = address.match(/^(.+?[市区町村])/);
-  var city = cityMatch ? cityMatch[1] : '';
+  // 市区町村を抽出（優先度: 区 > 町 > 村 > 市）
+  // 例: "福岡市東区箱崎" → city="東区", area="箱崎"
+  // 例: "北九州市小倉南区" → city="小倉南区", area=...
+  var city = '';
+  var cityEndIdx = 0;
+
+  // 区を探す（最後に見つかった区）
+  var kuMatch = address.match(/.*([^市区町村]+区)/);
+  if (kuMatch) {
+    city = kuMatch[1];
+    cityEndIdx = address.lastIndexOf(city) + city.length;
+  } else {
+    // 町を探す（郡の後の町、または単独の町）
+    var choMatch = address.match(/.*([^市区町村]+町)/);
+    if (choMatch) {
+      city = choMatch[1];
+      cityEndIdx = address.lastIndexOf(city) + city.length;
+    } else {
+      // 村を探す
+      var sonMatch = address.match(/.*([^市区町村]+村)/);
+      if (sonMatch) {
+        city = sonMatch[1];
+        cityEndIdx = address.lastIndexOf(city) + city.length;
+      } else {
+        // 市を探す
+        var shiMatch = address.match(/([^都道府県]+市)/);
+        if (shiMatch) {
+          city = shiMatch[1];
+          cityEndIdx = address.indexOf(city) + city.length;
+        }
+      }
+    }
+  }
 
   // 市区町村より後から番地（数字）までを抽出
-  var afterCity = city ? address.substring(city.length) : address;
+  var afterCity = cityEndIdx > 0 ? address.substring(cityEndIdx) : address;
   var areaMatch = afterCity.match(/^([^\d０-９]+)/);
   var area = areaMatch ? areaMatch[1].trim() : '';
 

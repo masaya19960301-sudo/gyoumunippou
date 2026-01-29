@@ -108,15 +108,20 @@
     th {
       background: #f8f9fa;
       padding: 10px 12px;
-      text-align: left;
+      text-align: center;
       font-weight: 500;
       color: #555;
       border-bottom: 2px solid #e0e0e0;
       white-space: nowrap;
     }
 
-    td { padding: 8px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+    td { padding: 8px 10px; border-bottom: 1px solid #eee; vertical-align: middle; text-align: center; }
     tr:hover td { background: #f8f9ff; }
+
+    /* 金額列は右揃え、備考列は左揃え */
+    .amount-cell { text-align: right !important; }
+    .biko-cell { text-align: left !important; }
+    .biko-cell input { text-align: left; }
 
     .no-data { text-align: center; color: #999; padding: 40px; font-size: 14px; }
 
@@ -419,6 +424,8 @@
     // グローバル変数
     var routeFileContent = '';
     var currentData = [];
+    var hasUnsavedChanges = false;
+    var originalData = []; // 保存時比較用
 
     // --- パーサー ---
     function parseText(text) {
@@ -633,8 +640,24 @@
       hideMsg();
     }
 
+    // --- 未保存チェック ---
+    function checkUnsavedChanges() {
+      if (!hasUnsavedChanges) return true;
+      var choice = confirm('変更が保存されていません。\n\nOK: 保存せずに移動\nキャンセル: 戻って保存');
+      if (choice) {
+        hasUnsavedChanges = false;
+        return true;
+      }
+      return false;
+    }
+
+    function markAsChanged() {
+      hasUnsavedChanges = true;
+    }
+
     // --- タブ切替 ---
     function showSection(name) {
+      if (name !== 'list' && !checkUnsavedChanges()) return;
       document.querySelectorAll('.section').forEach(function(el) { el.classList.remove('active'); });
       document.querySelectorAll('.tab').forEach(function(el) { el.classList.remove('active'); });
       document.getElementById('section-' + name).classList.add('active');
@@ -667,6 +690,10 @@
 
     // --- 日付変更時 ---
     function onDateChange() {
+      if (!checkUnsavedChanges()) {
+        // 元の値に戻す
+        return;
+      }
       var date = document.getElementById('selectDate').value;
       var truckSelect = document.getElementById('selectTruck');
 
@@ -703,6 +730,9 @@
 
     // --- 号車変更時 ---
     function onTruckChange() {
+      if (!checkUnsavedChanges()) {
+        return;
+      }
       var date = document.getElementById('selectDate').value;
       var truck = document.getElementById('selectTruck').value;
 
@@ -787,6 +817,7 @@
 
         // 金額
         var tdAmount = document.createElement('td');
+        tdAmount.className = 'amount-cell';
         var amt = parseFloat(String(item.amount).replace(/,/g, ''));
         tdAmount.textContent = isNaN(amt) ? item.amount : amt.toLocaleString() + '円';
         tr.appendChild(tdAmount);
@@ -835,6 +866,7 @@
 
         // 備考
         var tdBiko = document.createElement('td');
+        tdBiko.className = 'biko-cell';
         var inputBiko = document.createElement('input');
         inputBiko.type = 'text';
         inputBiko.className = 'biko-input';
@@ -846,6 +878,14 @@
         tbody.appendChild(tr);
       });
 
+      // 変更検知用のイベントリスナーを追加
+      var inputs = document.querySelectorAll('#editBody input');
+      inputs.forEach(function(input) {
+        input.addEventListener('change', markAsChanged);
+        input.addEventListener('input', markAsChanged);
+      });
+
+      hasUnsavedChanges = false;
       document.getElementById('listCard').style.display = 'block';
     }
 
@@ -888,6 +928,7 @@
         .withSuccessHandler(function(result) {
           if (result.success) {
             // 何件目の更新がある場合
+            hasUnsavedChanges = false;
             if (seqUpdates.length > 0) {
               var completed = 0;
               seqUpdates.forEach(function(update) {
@@ -896,6 +937,7 @@
                     completed++;
                     if (completed === seqUpdates.length) {
                       showMsg('保存しました', 'success');
+                      hasUnsavedChanges = false;
                       onTruckChange(); // 再読み込み
                     }
                   })
