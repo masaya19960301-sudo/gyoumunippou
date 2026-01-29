@@ -2,6 +2,7 @@
 <html>
 <head>
   <base target="_top">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -310,13 +311,17 @@
 
     <!-- データ取込セクション -->
     <div class="section active" id="section-import">
-      <!-- ① 配送データ -->
+      <!-- ① 配送データ（Excelファイル） -->
       <div class="card">
-        <h2>① 配送データ貼り付け（Excel）</h2>
-        <textarea class="csv-input" id="csvInput"
-          placeholder="Excelからセルをコピーしてここに貼り付けてください&#10;&#10;ヘッダー行も含めてそのまま全列コピー＆ペーストできます"></textarea>
+        <h2>① 配送データ（Excelファイル）</h2>
+        <div class="drop-zone" id="excelDropZone" onclick="document.getElementById('excelFile').click()">
+          <input type="file" id="excelFile" accept=".xlsx,.xls">
+          <div class="icon">📊</div>
+          <div class="text">クリックしてExcelファイルを選択<br>またはここにドラッグ＆ドロップ</div>
+          <div class="filename" id="excelFilename"></div>
+        </div>
         <div class="csv-hint">
-          ※Excelからの貼り付け（タブ区切り）に対応<br>
+          ※Excelファイル(.xlsx, .xls)に対応<br>
           ※ヘッダー行がある場合は自動でスキップされます
         </div>
         <div class="status-badge" id="statusCsv">未入力</div>
@@ -423,6 +428,7 @@
 
     // グローバル変数
     var routeFileContent = '';
+    var excelData = ''; // Excelから読み込んだTSVデータ
     var currentData = [];
     var hasUnsavedChanges = false;
     var originalData = []; // 保存時比較用
@@ -474,18 +480,59 @@
       return { headers: null, dataRows: rows };
     }
 
-    // --- 入力状態の監視 ---
-    document.getElementById('csvInput').addEventListener('input', function() {
-      updatePreview();
-      updateSaveButton();
+    // --- Excelファイル選択 ---
+    document.getElementById('excelFile').addEventListener('change', function(e) {
+      handleExcelFile(e.target.files[0]);
     });
 
-    // --- ファイル選択 ---
+    // --- Excelドラッグ＆ドロップ ---
+    var excelDropZone = document.getElementById('excelDropZone');
+
+    excelDropZone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      excelDropZone.classList.add('dragover');
+    });
+
+    excelDropZone.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      excelDropZone.classList.remove('dragover');
+    });
+
+    excelDropZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      excelDropZone.classList.remove('dragover');
+      var files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleExcelFile(files[0]);
+      }
+    });
+
+    function handleExcelFile(file) {
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          var data = new Uint8Array(e.target.result);
+          var workbook = XLSX.read(data, { type: 'array' });
+          var firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          // TSV形式で出力
+          excelData = XLSX.utils.sheet_to_csv(firstSheet, { FS: '\t' });
+          document.getElementById('excelFilename').textContent = file.name;
+          updatePreview();
+          updateSaveButton();
+        } catch (err) {
+          showMsg('Excelファイルの読み込みに失敗しました: ' + err.message, 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // --- 配送順ファイル選択 ---
     document.getElementById('routeFile').addEventListener('change', function(e) {
-      handleFile(e.target.files[0]);
+      handleRouteFile(e.target.files[0]);
     });
 
-    // --- ドラッグ＆ドロップ ---
+    // --- 配送順ドラッグ＆ドロップ ---
     var dropZone = document.getElementById('dropZone');
 
     dropZone.addEventListener('dragover', function(e) {
@@ -503,11 +550,11 @@
       dropZone.classList.remove('dragover');
       var files = e.dataTransfer.files;
       if (files.length > 0) {
-        handleFile(files[0]);
+        handleRouteFile(files[0]);
       }
     });
 
-    function handleFile(file) {
+    function handleRouteFile(file) {
       if (!file) return;
       var reader = new FileReader();
       reader.onload = function(e) {
@@ -519,19 +566,19 @@
     }
 
     function updateSaveButton() {
-      var hasCsv = document.getElementById('csvInput').value.trim() !== '';
+      var hasExcel = excelData !== '';
       var hasRoute = routeFileContent !== '';
       var btn = document.getElementById('btnSaveAll');
 
       var badgeCsv = document.getElementById('statusCsv');
       var badgeRoute = document.getElementById('statusRoute');
 
-      badgeCsv.textContent = hasCsv ? '入力済み' : '未入力';
-      badgeCsv.className = 'status-badge' + (hasCsv ? ' ready' : '');
+      badgeCsv.textContent = hasExcel ? '入力済み' : '未入力';
+      badgeCsv.className = 'status-badge' + (hasExcel ? ' ready' : '');
       badgeRoute.textContent = hasRoute ? '入力済み' : '未入力';
       badgeRoute.className = 'status-badge' + (hasRoute ? ' ready' : '');
 
-      if (hasCsv && hasRoute) {
+      if (hasExcel && hasRoute) {
         btn.disabled = false;
         btn.textContent = 'まとめて保存';
       } else {
@@ -541,7 +588,7 @@
     }
 
     function updatePreview() {
-      var text = document.getElementById('csvInput').value.trim();
+      var text = excelData;
       var card = document.getElementById('previewCard');
       if (!text) { card.style.display = 'none'; return; }
 
@@ -581,8 +628,7 @@
 
     // --- まとめて保存 ---
     function saveAll() {
-      var csvText = document.getElementById('csvInput').value.trim();
-      if (!csvText || !routeFileContent) {
+      if (!excelData || !routeFileContent) {
         showMsg('両方のデータを入力してください。', 'error');
         return;
       }
@@ -605,7 +651,9 @@
               updateSaveButton();
               if (result2.success) {
                 showMsg(result1.message + ' / ' + result2.message, 'success');
-                document.getElementById('csvInput').value = '';
+                excelData = '';
+                document.getElementById('excelFilename').textContent = '';
+                document.getElementById('excelFile').value = '';
                 routeFileContent = '';
                 document.getElementById('routeFilename').textContent = '';
                 document.getElementById('routeFile').value = '';
@@ -627,11 +675,13 @@
           updateSaveButton();
           showMsg('配送データ通信エラー: ' + err.message, 'error');
         })
-        .importCsvData(csvText);
+        .importCsvData(excelData);
     }
 
     function clearAll() {
-      document.getElementById('csvInput').value = '';
+      excelData = '';
+      document.getElementById('excelFilename').textContent = '';
+      document.getElementById('excelFile').value = '';
       routeFileContent = '';
       document.getElementById('routeFilename').textContent = '';
       document.getElementById('routeFile').value = '';
