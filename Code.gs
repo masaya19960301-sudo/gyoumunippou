@@ -285,15 +285,16 @@ function getFilteredData(date, truck) {
       // ルートマップのキー（伝票No）と一致する値を持つ列を探す
       var routeKeys = Object.keys(routeMap);
       if (routeKeys.length > 0 && allData.length > 0) {
-        var sampleKey = routeKeys[0];
+        outerLoop:
         for (var ci = 0; ci < headers.length; ci++) {
-          for (var ri = 0; ri < Math.min(5, allData.length); ri++) {
-            if (String(allData[ri][ci]).trim() === sampleKey) {
+          for (var ri = 0; ri < Math.min(10, allData.length); ri++) {
+            var cellVal = String(allData[ri][ci]).trim();
+            // ルートマップに存在するかチェック
+            if (routeMap[cellVal]) {
               slipIdx = ci;
-              break;
+              break outerLoop;
             }
           }
-          if (slipIdx !== -1) break;
         }
       }
     }
@@ -301,17 +302,25 @@ function getFilteredData(date, truck) {
     var amountIdx = findColIdx(headers, '金額');
     var paymentIdx = findColIdx(headers, '支払');
 
-    // デバッグ用
+    // デバッグ用：最初の行の全データを表示
+    var firstRowData = [];
+    if (allData.length > 0) {
+      for (var fi = 0; fi < allData[0].length; fi++) {
+        firstRowData.push(String(allData[0][fi]));
+      }
+    }
+
     var debugInfo = {
       headers: headers.join(' | '),
       dataCount: allData.length,
       slipIdx: slipIdx,
       routeMapSize: Object.keys(routeMap).length,
-      sampleSlips: [],
+      firstRow: firstRowData.join(' | '),
       sampleRouteKeys: Object.keys(routeMap).slice(0, 5)
     };
 
     if (slipIdx !== -1 && allData.length > 0) {
+      debugInfo.sampleSlips = [];
       for (var di = 0; di < Math.min(3, allData.length); di++) {
         debugInfo.sampleSlips.push(String(allData[di][slipIdx]));
       }

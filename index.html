@@ -724,11 +724,11 @@
             if (currentData.length === 0 && result.debug) {
               var d = result.debug;
               console.log('DEBUG:', JSON.stringify(d));
-              showMsg('データ0件 - ヘッダー:[' + d.headers + ']' +
-                ' データ行:' + d.dataCount +
-                ' 伝票列:' + d.slipIdx + ' ルートMap:' + d.routeMapSize +
-                ' 伝票例:' + d.sampleSlips.join(',') +
-                ' ルートキー例:' + d.sampleRouteKeys.join(','), 'error');
+              var msg = '伝票列:' + d.slipIdx + ' ルートMap:' + d.routeMapSize;
+              msg += '\n1行目:[' + d.firstRow + ']';
+              msg += '\nルートキー例:' + d.sampleRouteKeys.join(',');
+              if (d.sampleSlips) msg += '\n伝票例:' + d.sampleSlips.join(',');
+              showMsg(msg, 'error');
             }
             renderEditTable(date, truck);
           } else {
